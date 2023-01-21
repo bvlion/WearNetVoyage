@@ -101,7 +101,6 @@ class HttpRequesterGetTest {
     assertEquals(parameterValue2, TestUtil.getArgsBody(actual.body, parameterKey2))
   }
 
-
   @Test
   fun executeGetStatusCodeTest() {
     val title = "test_get_status_code"

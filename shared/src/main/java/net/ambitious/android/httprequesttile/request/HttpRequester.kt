@@ -44,7 +44,7 @@ class HttpRequester {
       .method(
         params.method.toString(),
         if (HttpMethod.permitsRequestBody(params.method.toString())) {
-          body?.toByteArray()?.let {
+          (body ?: "").toByteArray().let {
             it.toRequestBody(
               if (params.bodyType == Constant.BodyType.JSON) {
                 "application/json"

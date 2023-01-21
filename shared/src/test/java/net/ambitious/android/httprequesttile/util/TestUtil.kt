@@ -8,12 +8,14 @@ object TestUtil {
 
   fun getHeadersBody(body: String, key: String): String {
     val headers = JSONObject(body).getJSONObject("headers")
-    headers.keys().forEach {
-      val test = headers.get(it)
-      val eq = it == key
-      eq
-      test
-    }
     return headers.getString(key)
   }
+
+  fun getFormBody(body: String, key: String): String =
+    JSONObject(body).getJSONObject("form").getString(key)
+
+  fun getJsonBody(body: String, key: String): String =
+    JSONObject(body).getString("data").let {
+      JSONObject(it).getString(key)
+    }
 }
