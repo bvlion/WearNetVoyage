@@ -6,6 +6,9 @@ object TestUtil {
   fun getArgsBody(body: String, key: String): String =
     JSONObject(body).getJSONObject("args").getString(key)
 
+  fun getMethodBody(body: String): String =
+    JSONObject(body).getString("method")
+
   fun getHeadersBody(body: String, key: String): String {
     val headers = JSONObject(body).getJSONObject("headers")
     return headers.getString(key)

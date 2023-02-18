@@ -36,6 +36,7 @@ class HttpRequesterPostTest {
     assertEquals(title, actual.title)
     assertEquals(parameterValue1, TestUtil.getFormBody(actual.body, parameterKey1))
     assertEquals(parameterValue2, TestUtil.getFormBody(actual.body, parameterKey2))
+    assertEquals(Constant.HttpMethod.POST.name, TestUtil.getMethodBody(actual.body))
   }
 
   @Test
@@ -63,6 +64,7 @@ class HttpRequesterPostTest {
     assertEquals(title, actual.title)
     assertEquals(parameterValue1, TestUtil.getJsonBody(actual.body, parameterKey1))
     assertEquals(parameterValue2, TestUtil.getJsonBody(actual.body, parameterKey2))
+    assertEquals(Constant.HttpMethod.POST.name, TestUtil.getMethodBody(actual.body))
   }
 
   @Test
@@ -90,6 +92,7 @@ class HttpRequesterPostTest {
     assertEquals(title, actual.title)
     assertEquals(headerValue1, TestUtil.getHeadersBody(actual.body, headerKey1))
     assertEquals(headerValue2, TestUtil.getHeadersBody(actual.body, headerKey2))
+    assertEquals(Constant.HttpMethod.POST.name, TestUtil.getMethodBody(actual.body))
   }
 
   @Test
@@ -126,6 +129,7 @@ class HttpRequesterPostTest {
     assertEquals(headerValue2, TestUtil.getHeadersBody(actual.body, headerKey2))
     assertEquals(parameterValue1, TestUtil.getFormBody(actual.body, parameterKey1))
     assertEquals(parameterValue2, TestUtil.getFormBody(actual.body, parameterKey2))
+    assertEquals(Constant.HttpMethod.POST.name, TestUtil.getMethodBody(actual.body))
   }
 
 
@@ -163,6 +167,7 @@ class HttpRequesterPostTest {
     assertEquals(headerValue2, TestUtil.getHeadersBody(actual.body, headerKey2))
     assertEquals(parameterValue1, TestUtil.getJsonBody(actual.body, parameterKey1))
     assertEquals(parameterValue2, TestUtil.getJsonBody(actual.body, parameterKey2))
+    assertEquals(Constant.HttpMethod.POST.name, TestUtil.getMethodBody(actual.body))
   }
 
   @Test
