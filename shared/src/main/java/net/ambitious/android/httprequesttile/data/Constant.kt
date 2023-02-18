@@ -8,6 +8,6 @@ object Constant {
   }
 
   enum class HttpMethod {
-    GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE;
+    GET, POST, PUT, PATCH, DELETE;
   }
 }
