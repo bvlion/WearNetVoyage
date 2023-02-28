@@ -40,5 +40,5 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.json:json:20220924'
+    testImplementation 'org.json:json:20230227'
 }
