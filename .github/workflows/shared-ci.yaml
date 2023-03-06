@@ -1,4 +1,4 @@
-name: Android Main Branch CI
+name: Shared Pull Request CI
 
 on:
   push: # 後で PR に変更する
@@ -10,7 +10,7 @@ on:
       - '.github/workflows/shared-ci.yaml'
 
 jobs:
-  apk:
+  shared-ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
