@@ -20,31 +20,18 @@ class HttpRequester {
   suspend fun execute(params: RequestParams): ResponseParams = withContext(Dispatchers.IO) {
     val start = System.currentTimeMillis()
 
-    val body = when (params.bodyType) {
-      Constant.BodyType.JSON -> params.parameter?.let {
-        val json = JSONObject()
-        it.forEach { (k, v) ->
-          json.put(k, v)
-        }
-        json.toString()
-      }
-      else -> params.parameter?.map { (k, v) ->
-        "${URLEncoder.encode(k, PARAMETER_ENCODING)}=${URLEncoder.encode(v, PARAMETER_ENCODING)}"
-      }?.joinToString("&")
-    }
-
     val request = Request.Builder()
       .url(
-        if (HttpMethod.permitsRequestBody(params.method.toString()) || body == null) {
+        if (HttpMethod.permitsRequestBody(params.method.toString()) || params.parameters.isEmpty()) {
           params.url
         } else {
-          "${params.url}?$body"
+          "${params.url}?${params.parameters}"
         }
       )
       .method(
         params.method.toString(),
         if (HttpMethod.permitsRequestBody(params.method.toString())) {
-          (body ?: "").toByteArray().let {
+          params.parameters.toByteArray().let {
             it.toRequestBody(
               if (params.bodyType == Constant.BodyType.JSON) {
                 "application/json"
@@ -58,8 +45,17 @@ class HttpRequester {
         } else null
       )
       .apply {
-        params.headers?.let {
-          headers(it.toHeaders())
+        if (params.headers.isNotEmpty()) {
+          params.headers.split("\n").associate {
+            it.split(":").let { header ->
+              if (header.size != 2) {
+                return@let "" to ""
+              }
+              header[0].trim() to header[1].trim()
+            }
+          }
+            .filter { it.key.isNotEmpty() && it.value.isNotEmpty() }
+            .let { headers(it.toHeaders()) }
         }
       }
       .build()
@@ -77,9 +73,5 @@ class HttpRequester {
         res.body?.string() ?: ""
       )
     }
-  }
-
-  companion object {
-    private const val PARAMETER_ENCODING = "UTF-8"
   }
 }

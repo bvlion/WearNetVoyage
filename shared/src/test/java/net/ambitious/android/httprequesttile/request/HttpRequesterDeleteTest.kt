@@ -25,11 +25,7 @@ class HttpRequesterDeleteTest {
         "https://httpbin.org/anything",
         Constant.HttpMethod.DELETE,
         Constant.BodyType.FORM_PARAMS,
-        null,
-        mapOf(
-          parameterKey1 to parameterValue1,
-          parameterKey2 to parameterValue2,
-        )
+        parameters = "$parameterKey1=$parameterValue1&$parameterKey2=$parameterValue2"
       ))
     }
     assertEquals(200, actual.responseCode)
@@ -53,11 +49,7 @@ class HttpRequesterDeleteTest {
         "https://httpbin.org/anything",
         Constant.HttpMethod.DELETE,
         Constant.BodyType.JSON,
-        null,
-        mapOf(
-          parameterKey1 to parameterValue1,
-          parameterKey2 to parameterValue2,
-        )
+        parameters = "{\"$parameterKey1\":\"$parameterValue1\",\"$parameterKey2\":\"$parameterValue2\"}"
       ))
     }
     assertEquals(200, actual.responseCode)
@@ -81,11 +73,7 @@ class HttpRequesterDeleteTest {
         "https://httpbin.org/anything",
         Constant.HttpMethod.DELETE,
         Constant.BodyType.FORM_PARAMS,
-        mapOf(
-          headerKey1 to headerValue1,
-          headerKey2 to headerValue2,
-        ),
-        null
+        headers = "$headerKey1:$headerValue1\n$headerKey2:$headerValue2"
       ))
     }
     assertEquals(200, actual.responseCode)
@@ -113,14 +101,8 @@ class HttpRequesterDeleteTest {
         "https://httpbin.org/anything",
         Constant.HttpMethod.DELETE,
         Constant.BodyType.FORM_PARAMS,
-        mapOf(
-          headerKey1 to headerValue1,
-          headerKey2 to headerValue2,
-        ),
-        mapOf(
-          parameterKey1 to parameterValue1,
-          parameterKey2 to parameterValue2,
-        )
+        headers = "$headerKey1:$headerValue1\n$headerKey2:$headerValue2",
+        parameters = "$parameterKey1=$parameterValue1&$parameterKey2=$parameterValue2"
       ))
     }
     assertEquals(200, actual.responseCode)
@@ -151,14 +133,8 @@ class HttpRequesterDeleteTest {
         "https://httpbin.org/anything",
         Constant.HttpMethod.DELETE,
         Constant.BodyType.JSON,
-        mapOf(
-          headerKey1 to headerValue1,
-          headerKey2 to headerValue2,
-        ),
-        mapOf(
-          parameterKey1 to parameterValue1,
-          parameterKey2 to parameterValue2,
-        )
+        headers = "$headerKey1:$headerValue1\n$headerKey2:$headerValue2",
+        parameters = "{\"$parameterKey1\":\"$parameterValue1\",\"$parameterKey2\":\"$parameterValue2\"}"
       ))
     }
     assertEquals(200, actual.responseCode)
@@ -191,8 +167,6 @@ class HttpRequesterDeleteTest {
           "https://httpbin.org/status/$it",
           Constant.HttpMethod.DELETE,
           Constant.BodyType.FORM_PARAMS,
-          null,
-          null
         ))
       }
       assertEquals(it, actual.responseCode)
