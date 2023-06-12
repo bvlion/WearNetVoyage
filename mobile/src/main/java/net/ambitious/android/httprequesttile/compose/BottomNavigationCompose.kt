@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -18,8 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 
 @Composable
-fun MenuBottomNavigation() {
-  val selectedItem = remember { mutableStateOf(0) }
+fun MenuBottomNavigation(selectedItem: MutableState<Int> = remember { mutableStateOf(0) }) {
   BottomNavigation {
     items.forEachIndexed { index, item ->
       BottomNavigationItem(

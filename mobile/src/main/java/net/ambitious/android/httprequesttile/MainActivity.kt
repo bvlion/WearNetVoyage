@@ -19,6 +19,7 @@ import net.ambitious.android.httprequesttile.compose.ErrorDialogCompose
 import net.ambitious.android.httprequesttile.compose.MenuBottomNavigation
 import net.ambitious.android.httprequesttile.compose.NativeAdCompose
 import net.ambitious.android.httprequesttile.compose.RequestCreate
+import net.ambitious.android.httprequesttile.compose.RequestHistoryList
 import net.ambitious.android.httprequesttile.compose.SavedRequestList
 import net.ambitious.android.httprequesttile.compose.SavedRequestListPreview
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
@@ -59,6 +60,8 @@ class MainActivity : ComponentActivity() {
         viewModel.dismissErrorDialog()
       }
 
+      val bottomMenuIndex = remember { mutableStateOf(0) }
+
       MyApplicationTheme {
         Surface(
           modifier = Modifier.fillMaxSize(),
@@ -66,8 +69,15 @@ class MainActivity : ComponentActivity() {
         ) {
           Scaffold(
             topBar = { NativeAdCompose() },
-            content = { SavedRequestList(it.calculateBottomPadding()) },
-            bottomBar = { MenuBottomNavigation() }
+            content = {
+              when (bottomMenuIndex.value) {
+                0 -> SavedRequestList(it.calculateBottomPadding())
+                1 -> RequestCreate(it.calculateBottomPadding())
+                2 -> RequestHistoryList(it.calculateBottomPadding())
+                else -> Log.e("MainActivity", "Unknown index: ${bottomMenuIndex.value}")
+              }
+                      },
+            bottomBar = { MenuBottomNavigation(bottomMenuIndex) }
           )
         }
       }
