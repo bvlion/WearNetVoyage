@@ -2,7 +2,6 @@ package net.ambitious.android.httprequesttile
 
 import android.accounts.AccountManager
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,9 +20,8 @@ import net.ambitious.android.httprequesttile.compose.NativeAdCompose
 import net.ambitious.android.httprequesttile.compose.RequestCreate
 import net.ambitious.android.httprequesttile.compose.RequestHistoryList
 import net.ambitious.android.httprequesttile.compose.SavedRequestList
-import net.ambitious.android.httprequesttile.compose.SavedRequestListPreview
+import net.ambitious.android.httprequesttile.ui.theme.MainAnimatedVisibility
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
-import java.util.logging.Logger
 
 class MainActivity : ComponentActivity() {
 
@@ -70,12 +68,9 @@ class MainActivity : ComponentActivity() {
           Scaffold(
             topBar = { NativeAdCompose() },
             content = {
-              when (bottomMenuIndex.value) {
-                0 -> SavedRequestList(it.calculateBottomPadding())
-                1 -> RequestCreate(it.calculateBottomPadding())
-                2 -> RequestHistoryList(it.calculateBottomPadding())
-                else -> Log.e("MainActivity", "Unknown index: ${bottomMenuIndex.value}")
-              }
+                MainAnimatedVisibility(bottomMenuIndex.value == 0) { SavedRequestList(it.calculateBottomPadding()) }
+                MainAnimatedVisibility(bottomMenuIndex.value == 1) { RequestCreate(it.calculateBottomPadding()) }
+                MainAnimatedVisibility(bottomMenuIndex.value == 2) { RequestHistoryList(it.calculateBottomPadding()) }
                       },
             bottomBar = { MenuBottomNavigation(bottomMenuIndex) }
           )
