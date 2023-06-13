@@ -1,6 +1,5 @@
 package net.ambitious.android.httprequesttile.compose
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.noRippleClickable
 
 @Composable
 fun SavedRequest(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
@@ -46,7 +46,7 @@ fun SavedRequest(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
       Column {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          modifier = Modifier.clickable { checked.value = !checked.value }.padding(end = 16.dp)
+          modifier = Modifier.noRippleClickable { checked.value = !checked.value }.padding(end = 16.dp)
         ) {
           Checkbox(checked = checked.value, onCheckedChange = { checked.value = !checked.value })
           Text(text = "Watch に同期", fontSize = 12.sp)
