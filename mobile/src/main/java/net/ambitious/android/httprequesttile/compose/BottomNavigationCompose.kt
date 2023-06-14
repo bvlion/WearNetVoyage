@@ -6,10 +6,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +24,6 @@ fun MenuBottomNavigation(selectedItem: MutableState<Int> = remember { mutableSta
       BottomNavigationItem(
         icon = { Icon(item.icon, contentDescription = item.dist) },
         label = { Text(item.dist) },
-        alwaysShowLabel = false,
         selected = selectedItem.value == index,
         onClick = { selectedItem.value = index }
       )
@@ -33,13 +31,12 @@ fun MenuBottomNavigation(selectedItem: MutableState<Int> = remember { mutableSta
   }
 }
 
-private val items = listOf(BottomItem.Home, BottomItem.Edit, BottomItem.History, BottomItem.Sync, BottomItem.Menu)
+private val items = listOf(BottomItem.Home, BottomItem.Edit, BottomItem.History, BottomItem.Menu)
 
 sealed class BottomItem(val dist: String, val icon: ImageVector) {
   object Home : BottomItem("ホーム", Icons.Filled.Home)
   object Edit : BottomItem("作成", Icons.Filled.Edit)
-  object History : BottomItem("履歴", Icons.Filled.List)
-  object Sync : BottomItem("同期", Icons.Filled.Refresh)
+  object History : BottomItem("履歴", Icons.Filled.HistoryEdu)
   object Menu : BottomItem("メニュー", Icons.Filled.Menu)
 }
 
