@@ -16,6 +16,7 @@ import com.google.android.gms.common.AccountPicker
 import net.ambitious.android.httprequesttile.compose.DummyAdCompose
 import net.ambitious.android.httprequesttile.compose.ErrorDialogCompose
 import net.ambitious.android.httprequesttile.compose.MenuBottomNavigation
+import net.ambitious.android.httprequesttile.compose.MenuList
 import net.ambitious.android.httprequesttile.compose.NativeAdCompose
 import net.ambitious.android.httprequesttile.compose.RequestCreate
 import net.ambitious.android.httprequesttile.compose.RequestHistoryList
@@ -68,9 +69,10 @@ class MainActivity : ComponentActivity() {
           Scaffold(
             topBar = { NativeAdCompose() },
             content = {
-                MainAnimatedVisibility(bottomMenuIndex.value == 0) { SavedRequestList(it.calculateBottomPadding()) }
-                MainAnimatedVisibility(bottomMenuIndex.value == 1) { RequestCreate(it.calculateBottomPadding()) }
-                MainAnimatedVisibility(bottomMenuIndex.value == 2) { RequestHistoryList(it.calculateBottomPadding()) }
+              MainAnimatedVisibility(bottomMenuIndex.value == 0) { SavedRequestList(it.calculateBottomPadding()) }
+              MainAnimatedVisibility(bottomMenuIndex.value == 1) { RequestCreate(it.calculateBottomPadding()) }
+              MainAnimatedVisibility(bottomMenuIndex.value == 2) { RequestHistoryList(it.calculateBottomPadding()) }
+              MainAnimatedVisibility(bottomMenuIndex.value == 3) { MenuList(it.calculateBottomPadding()) }
                       },
             bottomBar = { MenuBottomNavigation(bottomMenuIndex) }
           )

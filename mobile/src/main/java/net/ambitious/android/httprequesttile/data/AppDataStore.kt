@@ -27,4 +27,10 @@ class AppDataStore(context: Context) {
     private var dataStore: AppDataStore? = null
     fun getDataStore(context: Context) = dataStore ?: AppDataStore(context).also { dataStore = it }
   }
+
+  enum class ViewMode(val type: Int) {
+    DEFAULT(0),
+    LIGHT(1),
+    DARK(2)
+  }
 }
