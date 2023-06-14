@@ -41,10 +41,16 @@ fun RequestHistory(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween
     ) {
-      Text(
-        text = "HogeHoge の Request",
-        modifier = Modifier.padding(start = 16.dp)
-      )
+      Column(modifier = Modifier.padding(start = 16.dp)) {
+        Text(
+          text = "モバイルから送信",
+          fontSize = 12.sp
+        )
+        Text(
+          text = "HogeHoge の Request",
+          modifier = Modifier.padding(top = 4.dp)
+        )
+      }
       Column(
         modifier = Modifier.padding(16.dp),
         horizontalAlignment = Alignment.End
