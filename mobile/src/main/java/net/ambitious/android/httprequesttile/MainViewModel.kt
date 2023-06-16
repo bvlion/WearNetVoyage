@@ -8,32 +8,32 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import net.ambitious.android.httprequesttile.data.AppDataStore
 import net.ambitious.android.httprequesttile.data.ErrorDetail
+import net.ambitious.android.httprequesttile.data.RequestParams
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val dataStore = AppDataStore.getDataStore(application)
 
-  private val _userAccount = MutableStateFlow<String?>("")
-  val userAccount = _userAccount.asStateFlow()
+  private val _savedRequest = MutableStateFlow<String?>("")
+  val savedRequest = _savedRequest.asStateFlow()
 
   private val _errorDialog = MutableStateFlow<ErrorDetail?>(null)
   val errorDialog = _errorDialog.asStateFlow()
 
   init {
     viewModelScope.launch {
-      dataStore.getUserAccount.collect {
-        _userAccount.value = it
+      dataStore.getSavedRequest.collect {
+        _savedRequest.value = it
       }
     }
   }
 
-  fun setUserAccount(userAccount: String) {
+  fun saveRequest(request: RequestParams) {
     viewModelScope.launch {
-      dataStore.setUserAccount(userAccount)
+      dataStore.saveRequest(request.toJsonString())
     }
   }
 
   fun showErrorDialog() {
-    _userAccount.value = ""
     _errorDialog.value = ErrorDetail("アカウントエラー", "当アプリではデータ保存のためのアカウントを選択していただく必要があります。")
   }
 

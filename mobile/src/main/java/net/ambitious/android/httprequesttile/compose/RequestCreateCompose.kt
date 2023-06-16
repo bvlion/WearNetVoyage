@@ -1,5 +1,6 @@
 package net.ambitious.android.httprequesttile.compose
 
+import android.webkit.URLUtil
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenuItem
@@ -21,47 +23,103 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import net.ambitious.android.httprequesttile.data.Constant
+import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun RequestCreate(bottomPadding: Dp = 56.dp) {
+fun RequestCreate(
+  bottomPadding: Dp = 56.dp,
+  defaultTitle: String = "",
+  defaultUrl: String = "https://",
+  defaultMethod: Constant.HttpMethod = Constant.HttpMethod.GET,
+  defaultBodyType: Constant.BodyType = Constant.BodyType.FORM_PARAMS,
+  defaultHeader: String = "Content-type:application/x-www-form-urlencoded\nUser-Agent:ワイのアプリ\n",
+  defaultBody: String = "a=b",
+  isUpdate: Boolean = false,
+  save: (RequestParams) -> Unit = {},
+  cancel: () -> Unit = {},
+) {
+  val title = remember { mutableStateOf(defaultTitle) }
+  val titleError = remember { mutableStateOf(false) }
 
-  val expanded = remember { mutableStateOf(false) }
-  val selectedMethod = remember { mutableStateOf(Constant.HttpMethod.GET) }
-  val selectedBodyType = remember { mutableStateOf(Constant.BodyType.FORM_PARAMS) }
+  val url = remember { mutableStateOf(defaultUrl) }
+  val urlError = remember { mutableStateOf(false) }
+
+  val methodExpanded = remember { mutableStateOf(false) }
+  val selectedMethod = remember { mutableStateOf(defaultMethod) }
+
+  val bodyTypeExpanded = remember { mutableStateOf(false) }
+  val selectedBodyType = remember { mutableStateOf(defaultBodyType) }
+
+  val header = remember { mutableStateOf(defaultHeader) }
+  val body = remember { mutableStateOf(defaultBody) }
+
+  val editCheck = remember { mutableStateOf(false) }
+  val cancelCheck = remember { mutableStateOf(false) }
 
   Column(
     Modifier
       .fillMaxSize()
       .verticalScroll(rememberScrollState())) {
 
+    // タイトル入力欄
     OutlinedTextField(
-      value = "",
-      onValueChange = {},
+      value = title.value,
+      onValueChange = {
+        title.value = it
+        titleError.value = it.isEmpty()
+        editCheck.value = true
+                      },
       label = { Text("タイトル") },
       modifier = Modifier
-        .padding(16.dp)
-        .fillMaxWidth()
+        .padding(
+          top = 16.dp,
+          start = 16.dp,
+          end = 16.dp,
+          bottom = if (titleError.value) 0.dp else 16.dp
+        )
+        .fillMaxWidth(),
+      isError = titleError.value,
+      trailingIcon = {
+        if (titleError.value) {
+          Icon(Icons.Filled.Error, "タイトル入力エラー", tint = MaterialTheme.colors.error)
+        }
+      }
     )
+    if (titleError.value) {
+      Text(
+        "タイトルを入力してください",
+        modifier = Modifier.padding(start = 32.dp, bottom = 16.dp),
+        color = MaterialTheme.colors.error,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold
+      )
+    }
 
+    // セレクトボックス
     Row {
+      // メソッドのセレクト
       ExposedDropdownMenuBox(
-        expanded = expanded.value,
+        expanded = methodExpanded.value,
         onExpandedChange = {
-          expanded.value = !expanded.value
+          methodExpanded.value = !methodExpanded.value
         },
         modifier = Modifier
           .width(160.dp)
@@ -70,25 +128,26 @@ fun RequestCreate(bottomPadding: Dp = 56.dp) {
         TextField(
           readOnly = true,
           value = selectedMethod.value.name,
-          onValueChange = { },
+          onValueChange = {},
           label = { Text("Method") },
           trailingIcon = {
             ExposedDropdownMenuDefaults.TrailingIcon(
-              expanded = expanded.value
+              expanded = methodExpanded.value
             )
           },
           colors = ExposedDropdownMenuDefaults.textFieldColors()
         )
         ExposedDropdownMenu(
-          expanded = expanded.value,
+          expanded = methodExpanded.value,
           onDismissRequest = {
-            expanded.value = false
+            methodExpanded.value = false
           }
         ) {
           Constant.HttpMethod.values().forEach {
             DropdownMenuItem(onClick = {
               selectedMethod.value = it
-              expanded.value = false
+              methodExpanded.value = false
+              editCheck.value = true
             }) {
               Text(text = it.name)
             }
@@ -96,35 +155,37 @@ fun RequestCreate(bottomPadding: Dp = 56.dp) {
         }
       }
 
+      // ボディタイプのセレクト
       ExposedDropdownMenuBox(
-        expanded = expanded.value,
+        expanded = bodyTypeExpanded.value,
         onExpandedChange = {
-          expanded.value = !expanded.value
+          bodyTypeExpanded.value = !bodyTypeExpanded.value
         },
         modifier = Modifier.padding(end = 16.dp, start = 8.dp)
       ) {
         TextField(
           readOnly = true,
           value = selectedBodyType.value.name,
-          onValueChange = { },
+          onValueChange = {},
           label = { Text("BodyType") },
           trailingIcon = {
             ExposedDropdownMenuDefaults.TrailingIcon(
-              expanded = expanded.value
+              expanded = bodyTypeExpanded.value
             )
           },
           colors = ExposedDropdownMenuDefaults.textFieldColors()
         )
         ExposedDropdownMenu(
-          expanded = expanded.value,
+          expanded = bodyTypeExpanded.value,
           onDismissRequest = {
-            expanded.value = false
+            bodyTypeExpanded.value = false
           }
         ) {
           Constant.BodyType.values().forEach {
             DropdownMenuItem(onClick = {
               selectedBodyType.value = it
-              expanded.value = false
+              bodyTypeExpanded.value = false
+              editCheck.value = true
             }) {
               Text(text = it.name)
             }
@@ -133,18 +194,47 @@ fun RequestCreate(bottomPadding: Dp = 56.dp) {
       }
     }
 
+    // URL入力欄
     OutlinedTextField(
-      value = "https://",
-      onValueChange = {},
+      value = url.value,
+      onValueChange = {
+        url.value = it
+        urlError.value = URLUtil.isValidUrl(it).not()
+        editCheck.value = true
+                      },
       label = { Text("URL") },
       modifier = Modifier
-        .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
-        .fillMaxWidth()
+        .padding(
+          top = 16.dp,
+          start = 16.dp,
+          end = 16.dp,
+          bottom = if (urlError.value) 0.dp else 8.dp
+        )
+        .fillMaxWidth(),
+      isError = urlError.value,
+      trailingIcon = {
+        if (urlError.value) {
+          Icon(Icons.Filled.Error, "URL 入力エラー", tint = MaterialTheme.colors.error)
+        }
+      }
     )
+    if (urlError.value) {
+      Text(
+        "URL を入力してください",
+        modifier = Modifier.padding(start = 32.dp, bottom = 8.dp),
+        color = MaterialTheme.colors.error,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold
+      )
+    }
 
+    // ヘッダー入力欄
     OutlinedTextField(
-      value = "Content-type:application/x-www-form-urlencoded\nUser-Agent:ワイのアプリ\n",
-      onValueChange = {},
+      value = header.value,
+      onValueChange = {
+        header.value = it
+        editCheck.value = true
+                      },
       label = { Text("Request Headers") },
       singleLine = false,
       minLines = 7,
@@ -153,9 +243,13 @@ fun RequestCreate(bottomPadding: Dp = 56.dp) {
         .fillMaxWidth()
     )
 
+    // ボディ入力欄
     OutlinedTextField(
-      value = "a=b",
-      onValueChange = {},
+      value = body.value,
+      onValueChange = {
+        body.value = it
+        editCheck.value = true
+                      },
       label = { Text("Request Body") },
       singleLine = false,
       minLines = 7,
@@ -165,10 +259,33 @@ fun RequestCreate(bottomPadding: Dp = 56.dp) {
     )
 
     Button(
-      onClick = { /*TODO*/ },
+      onClick = {
+        if (title.value.isEmpty()) {
+          titleError.value = true
+        }
+        if (url.value.isEmpty()) {
+          urlError.value = true
+        }
+        if (titleError.value || urlError.value) {
+          return@Button
+        }
+
+        save(
+          RequestParams(
+            title = title.value,
+            url = url.value,
+            method = selectedMethod.value,
+            bodyType = selectedBodyType.value,
+            headers = header.value,
+            parameters = body.value
+          )
+        )
+      },
       modifier = Modifier
         .fillMaxWidth()
-        .padding(16.dp, 8.dp).height(48.dp)
+        .padding(16.dp, 8.dp)
+        .height(48.dp),
+      enabled = title.value.isNotEmpty() && URLUtil.isValidUrl(url.value)
     ) {
       Text(text = "登録・更新")
     }
@@ -178,23 +295,60 @@ fun RequestCreate(bottomPadding: Dp = 56.dp) {
       modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp + bottomPadding)
     ) {
       OutlinedButton(
-        onClick = { /*TODO*/ },
-        modifier = Modifier.weight(1f).padding(end = 8.dp).height(44.dp),
+        onClick = {
+          if (editCheck.value) {
+            cancelCheck.value = true
+            return@OutlinedButton
+          }
+          cancel()
+        },
+        modifier = Modifier
+          .weight(1f)
+          .padding(
+            end = if (isUpdate) {
+              8.dp
+            } else {
+              0.dp
+            }
+          )
+          .height(44.dp),
       ) {
         Icon(Icons.Filled.Close, contentDescription = "キャンセル")
         Text(text = "キャンセル", modifier = Modifier.padding(start = 8.dp))
       }
 
-      OutlinedButton(
-        onClick = { /*TODO*/ },
-        modifier = Modifier.weight(1f).padding(start = 8.dp).height(44.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-          contentColor = MaterialTheme.colors.error
-        )
-      ) {
-        Icon(Icons.Filled.Delete, contentDescription = "削除")
-        Text(text = "削除", modifier = Modifier.padding(start = 8.dp))
+      if (isUpdate) {
+        OutlinedButton(
+          onClick = { /*TODO*/ },
+          modifier = Modifier
+            .weight(1f)
+            .padding(start = 8.dp)
+            .height(44.dp),
+          colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colors.error
+          )
+        ) {
+          Icon(Icons.Filled.Delete, contentDescription = "削除")
+          Text(text = "削除", modifier = Modifier.padding(start = 8.dp))
+        }
       }
+    }
+
+    if (cancelCheck.value) {
+      AlertDialog(
+        onDismissRequest = { cancelCheck.value = false },
+        title = { Text("入力を中断しますか？") },
+        text = { Text("中断すると今の入力内容は破棄されます。") },
+        dismissButton = {
+          TextButton(onClick = { cancelCheck.value = false }) { Text("閉じる") }
+        },
+        confirmButton = {
+          TextButton(onClick = {
+            cancelCheck.value = false
+            cancel()
+          }) { Text("入力をやめる") }
+        }
+      )
     }
   }
 }

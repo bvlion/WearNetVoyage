@@ -13,16 +13,16 @@ class AppDataStore(context: Context) {
   private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("settings")
   private val settingsDataStore = context.dataStore
 
-  val getUserAccount: Flow<String?> = settingsDataStore.data.map { pref ->
-    pref[USER_ACCOUNT_KEY]
+  val getSavedRequest: Flow<String?> = settingsDataStore.data.map { pref ->
+    pref[SAVED_REQUEST_KEY]
   }
 
-  suspend fun setUserAccount(userAccount: String) = settingsDataStore.edit {
-    it[USER_ACCOUNT_KEY] = userAccount
+  suspend fun saveRequest(request: String) = settingsDataStore.edit {
+    it[SAVED_REQUEST_KEY] = request
   }
 
   companion object {
-    private val USER_ACCOUNT_KEY = stringPreferencesKey("user_account")
+    private val SAVED_REQUEST_KEY = stringPreferencesKey("saved_request")
 
     private var dataStore: AppDataStore? = null
     fun getDataStore(context: Context) = dataStore ?: AppDataStore(context).also { dataStore = it }

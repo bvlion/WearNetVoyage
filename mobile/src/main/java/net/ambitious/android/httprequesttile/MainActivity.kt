@@ -28,25 +28,6 @@ class MainActivity : ComponentActivity() {
 
   private lateinit var viewModel: MainViewModel
 
-  private val activityResult =
-    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-      if (result.resultCode == RESULT_OK) {
-        result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)?.let {
-          viewModel.setUserAccount(it)
-          return@registerForActivityResult
-        }
-      }
-      viewModel.showErrorDialog()
-    }
-
-  private fun showChoose() {
-    val intent = AccountPicker.newChooseAccountIntent(
-      AccountPicker.AccountChooserOptions.Builder()
-        .setTitleOverrideText("バックアップに利用するアカウントを選択して下さい")
-        .build()
-    )
-    activityResult.launch(intent)
-  }
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     MobileAds.initialize(this)
@@ -70,7 +51,16 @@ class MainActivity : ComponentActivity() {
             topBar = { NativeAdCompose() },
             content = {
               MainAnimatedVisibility(bottomMenuIndex.value == 0) { SavedRequestList(it.calculateBottomPadding()) }
-              MainAnimatedVisibility(bottomMenuIndex.value == 1) { RequestCreate(it.calculateBottomPadding()) }
+              MainAnimatedVisibility(bottomMenuIndex.value == 1) {
+                RequestCreate(
+                  it.calculateBottomPadding(),
+                  cancel = { bottomMenuIndex.value = 0 },
+                  save = {
+                    viewModel::saveRequest
+                    bottomMenuIndex.value = 0
+                  }
+                )
+              }
               MainAnimatedVisibility(bottomMenuIndex.value == 2) { RequestHistoryList(it.calculateBottomPadding()) }
               MainAnimatedVisibility(bottomMenuIndex.value == 3) { MenuList(it.calculateBottomPadding()) }
                       },
