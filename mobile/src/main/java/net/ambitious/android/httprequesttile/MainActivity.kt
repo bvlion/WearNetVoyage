@@ -1,10 +1,8 @@
 package net.ambitious.android.httprequesttile
 
-import android.accounts.AccountManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -12,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.common.AccountPicker
 import net.ambitious.android.httprequesttile.compose.DummyAdCompose
 import net.ambitious.android.httprequesttile.compose.ErrorDialogCompose
 import net.ambitious.android.httprequesttile.compose.MenuBottomNavigation
@@ -21,6 +18,9 @@ import net.ambitious.android.httprequesttile.compose.NativeAdCompose
 import net.ambitious.android.httprequesttile.compose.RequestCreate
 import net.ambitious.android.httprequesttile.compose.RequestHistoryList
 import net.ambitious.android.httprequesttile.compose.SavedRequestList
+import net.ambitious.android.httprequesttile.data.Constant
+import net.ambitious.android.httprequesttile.data.RequestParams
+import net.ambitious.android.httprequesttile.data.parseRequestParams
 import net.ambitious.android.httprequesttile.ui.theme.MainAnimatedVisibility
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 
@@ -35,12 +35,15 @@ class MainActivity : ComponentActivity() {
 
     setContent {
       val errorDialog = viewModel.errorDialog.collectAsState()
+      val savedRequests = viewModel.savedRequest.collectAsState()
 
       ErrorDialogCompose(errorDialog.value) {
         viewModel.dismissErrorDialog()
       }
 
       val bottomMenuIndex = remember { mutableStateOf(0) }
+      val editRequest = remember { mutableStateOf<RequestParams?>(null) }
+      val editRequestIndex = remember { mutableStateOf(-1) }
 
       MyApplicationTheme {
         Surface(
@@ -50,26 +53,61 @@ class MainActivity : ComponentActivity() {
           Scaffold(
             topBar = { NativeAdCompose() },
             content = {
-              MainAnimatedVisibility(bottomMenuIndex.value == 0) { SavedRequestList(it.calculateBottomPadding()) }
+              MainAnimatedVisibility(bottomMenuIndex.value == 0) {
+                SavedRequestList(
+                  requests = savedRequests.value?.parseRequestParams() ?: emptyList(),
+                  newCreateClick = { bottomMenuIndex.value = 1 },
+                  bottomPadding = it.calculateBottomPadding(),
+                  edit = { index, request ->
+                    editRequestIndex.value = index
+                    editRequest.value = request
+                    bottomMenuIndex.value = 1
+                  },
+                )
+              }
               MainAnimatedVisibility(bottomMenuIndex.value == 1) {
                 RequestCreate(
+                  editRequest.value?.title ?: "",
+                  editRequest.value?.url ?: "https://",
+                  editRequest.value?.method ?: Constant.HttpMethod.GET,
+                  editRequest.value?.bodyType ?: Constant.BodyType.QUERY,
+                  editRequest.value?.headers ?: "Content-type:application/x-www-form-urlencoded\nUser-Agent:ワイのアプリ\n",
+                  editRequest.value?.parameters ?: "a=b",
+                  editRequestIndex.value,
                   it.calculateBottomPadding(),
-                  cancel = { bottomMenuIndex.value = 0 },
-                  save = {
-                    viewModel::saveRequest
+                  cancel = {
                     bottomMenuIndex.value = 0
+                    editRequest.value = null
+                    editRequestIndex.value = -1
+                           },
+                  save = { index, request ->
+                    viewModel.saveRequest(index, request)
+                    bottomMenuIndex.value = 0
+                    editRequest.value = null
+                    editRequestIndex.value = -1
                   }
                 )
               }
               MainAnimatedVisibility(bottomMenuIndex.value == 2) { RequestHistoryList(it.calculateBottomPadding()) }
               MainAnimatedVisibility(bottomMenuIndex.value == 3) { MenuList(it.calculateBottomPadding()) }
                       },
-            bottomBar = { MenuBottomNavigation(bottomMenuIndex) }
+            bottomBar = {
+              MenuBottomNavigation(bottomMenuIndex) {
+                if (it != 1) {
+                  editRequest.value = null
+                  editRequestIndex.value = -1
+                }
+              }
+            }
           )
         }
       }
     }
   }
+}
+
+private fun resetEdit() {
+
 }
 
 @Preview(showBackground = true)
@@ -78,7 +116,7 @@ fun DefaultPreview() {
   MyApplicationTheme {
     Scaffold(
       topBar = { DummyAdCompose() },
-      content = { RequestCreate(it.calculateBottomPadding()) },
+      content = { SavedRequestList(emptyList(), bottomPadding = it.calculateBottomPadding()) },
       bottomBar = { MenuBottomNavigation() }
     )
   }

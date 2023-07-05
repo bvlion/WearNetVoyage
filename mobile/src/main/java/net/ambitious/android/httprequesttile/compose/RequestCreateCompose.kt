@@ -45,15 +45,15 @@ import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RequestCreate(
+  defaultTitle: String,
+  defaultUrl: String,
+  defaultMethod: Constant.HttpMethod,
+  defaultBodyType: Constant.BodyType,
+  defaultHeader: String,
+  defaultBody: String,
+  savedIndex: Int,
   bottomPadding: Dp = 56.dp,
-  defaultTitle: String = "",
-  defaultUrl: String = "https://",
-  defaultMethod: Constant.HttpMethod = Constant.HttpMethod.GET,
-  defaultBodyType: Constant.BodyType = Constant.BodyType.FORM_PARAMS,
-  defaultHeader: String = "Content-type:application/x-www-form-urlencoded\nUser-Agent:ワイのアプリ\n",
-  defaultBody: String = "a=b",
-  isUpdate: Boolean = false,
-  save: (RequestParams) -> Unit = {},
+  save: (Int, RequestParams) -> Unit = { _, _ -> },
   cancel: () -> Unit = {},
 ) {
   val title = remember { mutableStateOf(defaultTitle) }
@@ -271,6 +271,7 @@ fun RequestCreate(
         }
 
         save(
+          savedIndex,
           RequestParams(
             title = title.value,
             url = url.value,
@@ -287,7 +288,7 @@ fun RequestCreate(
         .height(48.dp),
       enabled = title.value.isNotEmpty() && URLUtil.isValidUrl(url.value)
     ) {
-      Text(text = "登録・更新")
+      Text(text = if (savedIndex > -1) "更新" else "登録")
     }
 
     Row(
@@ -305,7 +306,7 @@ fun RequestCreate(
         modifier = Modifier
           .weight(1f)
           .padding(
-            end = if (isUpdate) {
+            end = if (savedIndex > -1) {
               8.dp
             } else {
               0.dp
@@ -317,7 +318,7 @@ fun RequestCreate(
         Text(text = "キャンセル", modifier = Modifier.padding(start = 8.dp))
       }
 
-      if (isUpdate) {
+      if (savedIndex > -1) {
         OutlinedButton(
           onClick = { /*TODO*/ },
           modifier = Modifier
@@ -357,6 +358,14 @@ fun RequestCreate(
 @Composable
 fun RequestCreatePreview() {
   MyApplicationTheme {
-    RequestCreate()
+    RequestCreate(
+      "てすとだよ",
+      "https://",
+      Constant.HttpMethod.GET,
+      Constant.BodyType.FORM_PARAMS,
+      "Content-type:application/x-www-form-urlencoded\nUser-Agent:ワイのアプリ\n",
+      "a=b",
+      0
+    )
   }
 }

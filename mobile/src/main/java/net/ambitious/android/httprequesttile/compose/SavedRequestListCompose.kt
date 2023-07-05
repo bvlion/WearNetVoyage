@@ -1,5 +1,6 @@
 package net.ambitious.android.httprequesttile.compose
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
@@ -26,17 +28,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.ambitious.android.httprequesttile.data.Constant
+import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 import net.ambitious.android.httprequesttile.ui.theme.noRippleClickable
 
 @Composable
-fun SavedRequest(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
-  val checked = remember { mutableStateOf(false) }
+fun SavedRequest(
+  addTopPadding: Dp = 0.dp,
+  addBottomPadding: Dp = 0.dp,
+  requestParams: RequestParams,
+  watchSync: () -> Unit = {},
+  edit: (RequestParams) -> Unit = {},
+) {
+  val checked = remember { mutableStateOf(requestParams.watchSync) }
 
   Card(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(8.dp, 8.dp + addTopPadding, 8.dp, 8.dp + addBottomPadding),
+      .padding(8.dp, 8.dp + addTopPadding, 8.dp, 8.dp + addBottomPadding)
+      .clickable { edit(requestParams) },
     elevation = 2.dp,
   ) {
     Row(
@@ -46,13 +57,19 @@ fun SavedRequest(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
       Column {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          modifier = Modifier.noRippleClickable { checked.value = !checked.value }.padding(end = 16.dp)
+          modifier = Modifier
+            .noRippleClickable {
+              checked.value = !checked.value
+            }
+            .padding(end = 16.dp)
         ) {
-          Checkbox(checked = checked.value, onCheckedChange = { checked.value = !checked.value })
+          Checkbox(checked = checked.value, onCheckedChange = {
+            checked.value = it
+          })
           Text(text = "Watch に同期", fontSize = 12.sp)
         }
         Text(
-          text = "HogeHoge の Request",
+          text = requestParams.title,
           modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 24.dp)
         )
       }
@@ -61,8 +78,11 @@ fun SavedRequest(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
       ) {
         Icon(
           Icons.Default.Send,
-          contentDescription = "Localized description",
-          modifier = Modifier.height(80.dp).width(80.dp).padding(24.dp)
+          contentDescription = "送信ボタン",
+          modifier = Modifier
+            .height(80.dp)
+            .width(80.dp)
+            .padding(24.dp)
         )
       }
     }
@@ -71,10 +91,47 @@ fun SavedRequest(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
 }
 
 @Composable
-fun SavedRequestList(bottomPadding: Dp = 56.dp) {
-  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-    repeat(10) {
-      SavedRequest(if (it == 0) 8.dp else 0.dp, if (it == 9) 8.dp + bottomPadding else 0.dp)
+fun SavedRequestList(
+  requests: List<RequestParams>,
+  newCreateClick: () -> Unit = {},
+  bottomPadding: Dp = 56.dp,
+  edit: (Int, RequestParams) -> Unit = { _, _ -> },
+) {
+  if (requests.isEmpty()) {
+    Column(
+      Modifier.fillMaxSize(),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Text(
+        text = "保存されたリクエストがありません",
+        fontSize = 13.sp
+      )
+
+      Button(
+        onClick = newCreateClick,
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(32.dp)
+          .height(48.dp),
+      ) {
+        Text(text = "新規リクエストを作成する")
+      }
+    }
+    return
+  }
+
+  Column(
+    Modifier
+      .fillMaxSize()
+      .verticalScroll(rememberScrollState())) {
+    requests.forEachIndexed { index, requestParams ->
+      SavedRequest(
+        if (index == 0) 8.dp else 0.dp,
+        if (index == requests.size - 1) 8.dp + bottomPadding else 0.dp,
+        requestParams,
+        edit = { edit(index, it) }
+      )
     }
   }
 }
@@ -83,6 +140,13 @@ fun SavedRequestList(bottomPadding: Dp = 56.dp) {
 @Composable
 fun SavedRequestListPreview() {
   MyApplicationTheme {
-    SavedRequestList()
+    SavedRequestList(listOf(
+      RequestParams(
+        "ぐーぐる",
+        "https://www.google.com/",
+        Constant.HttpMethod.GET,
+        Constant.BodyType.QUERY,
+      )
+    ))
   }
 }

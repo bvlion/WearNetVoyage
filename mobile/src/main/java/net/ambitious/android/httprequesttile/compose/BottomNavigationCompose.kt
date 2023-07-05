@@ -18,14 +18,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 
 @Composable
-fun MenuBottomNavigation(selectedItem: MutableState<Int> = remember { mutableStateOf(0) }) {
+fun MenuBottomNavigation(
+  selectedItem: MutableState<Int> = remember { mutableStateOf(0) },
+  onSelected: (Int) -> Unit = {}
+) {
   BottomNavigation {
     items.forEachIndexed { index, item ->
       BottomNavigationItem(
         icon = { Icon(item.icon, contentDescription = item.dist) },
         label = { Text(item.dist) },
         selected = selectedItem.value == index,
-        onClick = { selectedItem.value = index }
+        onClick = {
+          selectedItem.value = index
+          onSelected(index)
+        }
       )
     }
   }
