@@ -15,7 +15,7 @@ import org.json.JSONArray
 class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val dataStore = AppDataStore.getDataStore(application)
 
-  private val _savedRequest = MutableStateFlow<String?>(null)
+  private val _savedRequest = MutableStateFlow<String?>("")
   val savedRequest = _savedRequest.asStateFlow()
 
   private val _errorDialog = MutableStateFlow<ErrorDetail?>(null)
@@ -47,6 +47,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         JSONArray(listOf(request.toJsonString())).toString()
       })
         .let { dataStore.saveRequest(it) }
+    }
+  }
+
+  fun deleteRequest(deleteIndex: Int) {
+    viewModelScope.launch {
+      savedRequest.value?.run {
+        parseRequestParams()
+          .toMutableList()
+          .apply {
+            removeAt(deleteIndex)
+          }
+          .map { it.toJsonString() }
+          .let { JSONArray(it).toString() }
+          .let { dataStore.saveRequest(it) }
+      }
     }
   }
 

@@ -92,11 +92,15 @@ fun SavedRequest(
 
 @Composable
 fun SavedRequestList(
-  requests: List<RequestParams>,
+  requests: List<RequestParams>?,
   newCreateClick: () -> Unit = {},
   bottomPadding: Dp = 56.dp,
   edit: (Int, RequestParams) -> Unit = { _, _ -> },
 ) {
+  if (requests == null) {
+    return
+  }
+
   if (requests.isEmpty()) {
     Column(
       Modifier.fillMaxSize(),

@@ -1,6 +1,5 @@
 package net.ambitious.android.httprequesttile.data
 
-import com.google.android.gms.wearable.DataMap
 import org.json.JSONArray
 import org.json.JSONObject
 

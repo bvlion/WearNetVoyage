@@ -55,6 +55,7 @@ fun RequestCreate(
   bottomPadding: Dp = 56.dp,
   save: (Int, RequestParams) -> Unit = { _, _ -> },
   cancel: () -> Unit = {},
+  delete: (Int) -> Unit = {},
 ) {
   val title = remember { mutableStateOf(defaultTitle) }
   val titleError = remember { mutableStateOf(false) }
@@ -73,6 +74,7 @@ fun RequestCreate(
 
   val editCheck = remember { mutableStateOf(false) }
   val cancelCheck = remember { mutableStateOf(false) }
+  val deleteCheck = remember { mutableStateOf(false) }
 
   Column(
     Modifier
@@ -320,7 +322,7 @@ fun RequestCreate(
 
       if (savedIndex > -1) {
         OutlinedButton(
-          onClick = { /*TODO*/ },
+          onClick = { deleteCheck.value = true },
           modifier = Modifier
             .weight(1f)
             .padding(start = 8.dp)
@@ -348,6 +350,23 @@ fun RequestCreate(
             cancelCheck.value = false
             cancel()
           }) { Text("入力をやめる") }
+        }
+      )
+    }
+
+    if (deleteCheck.value) {
+      AlertDialog(
+        onDismissRequest = { deleteCheck.value = false },
+        title = { Text("削除しますか？") },
+        text = { Text("「${title.value}」を削除します。\nこの操作は元に戻せません。") },
+        dismissButton = {
+          TextButton(onClick = { deleteCheck.value = false }) { Text("閉じる") }
+        },
+        confirmButton = {
+          TextButton(onClick = {
+            deleteCheck.value = false
+            delete(savedIndex)
+          }) { Text("削除") }
         }
       )
     }

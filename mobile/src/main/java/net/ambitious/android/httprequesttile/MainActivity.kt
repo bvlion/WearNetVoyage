@@ -55,7 +55,17 @@ class MainActivity : ComponentActivity() {
             content = {
               MainAnimatedVisibility(bottomMenuIndex.value == 0) {
                 SavedRequestList(
-                  requests = savedRequests.value?.parseRequestParams() ?: emptyList(),
+                  requests = if (savedRequests.value == null) {
+                    emptyList()
+                  } else {
+                    savedRequests.value?.let {
+                      if (it.isEmpty()) {
+                        null // 起動時に入力画面が出ないようにする
+                      } else {
+                        it.parseRequestParams()
+                      }
+                    }
+                  },
                   newCreateClick = { bottomMenuIndex.value = 1 },
                   bottomPadding = it.calculateBottomPadding(),
                   edit = { index, request ->
@@ -77,14 +87,14 @@ class MainActivity : ComponentActivity() {
                   it.calculateBottomPadding(),
                   cancel = {
                     bottomMenuIndex.value = 0
-                    editRequest.value = null
-                    editRequestIndex.value = -1
                            },
                   save = { index, request ->
                     viewModel.saveRequest(index, request)
                     bottomMenuIndex.value = 0
-                    editRequest.value = null
-                    editRequestIndex.value = -1
+                  },
+                  delete = {
+                    viewModel.deleteRequest(it)
+                    bottomMenuIndex.value = 0
                   }
                 )
               }
@@ -104,10 +114,6 @@ class MainActivity : ComponentActivity() {
       }
     }
   }
-}
-
-private fun resetEdit() {
-
 }
 
 @Preview(showBackground = true)
