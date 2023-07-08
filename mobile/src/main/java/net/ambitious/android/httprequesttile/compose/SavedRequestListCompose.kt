@@ -34,12 +34,13 @@ import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 import net.ambitious.android.httprequesttile.ui.theme.noRippleClickable
 
 @Composable
-fun SavedRequest(
+private fun SavedRequest(
   addTopPadding: Dp = 0.dp,
   addBottomPadding: Dp = 0.dp,
   requestParams: RequestParams,
-  watchSync: () -> Unit = {},
+  watchSync: (RequestParams) -> Unit = {},
   edit: (RequestParams) -> Unit = {},
+  send: (RequestParams) -> Unit = {},
 ) {
   val checked = remember { mutableStateOf(requestParams.watchSync) }
 
@@ -60,13 +61,15 @@ fun SavedRequest(
           modifier = Modifier
             .noRippleClickable {
               checked.value = !checked.value
+              watchSync(requestParams.copy(watchSync = checked.value))
             }
             .padding(end = 16.dp)
         ) {
           Checkbox(checked = checked.value, onCheckedChange = {
             checked.value = it
+            watchSync(requestParams.copy(watchSync = checked.value))
           })
-          Text(text = "Watch に同期", fontSize = 12.sp)
+          Text(text = "ウェアラブルに同期", fontSize = 12.sp)
         }
         Text(
           text = requestParams.title,
@@ -74,7 +77,7 @@ fun SavedRequest(
         )
       }
       IconButton(
-        onClick = { },
+        onClick = { send(requestParams) },
       ) {
         Icon(
           Icons.Default.Send,
@@ -86,7 +89,6 @@ fun SavedRequest(
         )
       }
     }
-
   }
 }
 
@@ -95,46 +97,43 @@ fun SavedRequestList(
   requests: List<RequestParams>?,
   newCreateClick: () -> Unit = {},
   bottomPadding: Dp = 56.dp,
+  watchSync: (Int, RequestParams) -> Unit = { _, _ -> },
   edit: (Int, RequestParams) -> Unit = { _, _ -> },
-) {
-  if (requests == null) {
-    return
-  }
+  send: (RequestParams) -> Unit = {},
+) = when {
+  requests == null -> Unit
+  requests.isEmpty() -> Column(
+    Modifier.fillMaxSize().padding(bottom = 24.dp + bottomPadding),
+    verticalArrangement = Arrangement.Center,
+    horizontalAlignment = Alignment.CenterHorizontally
+  ) {
+    Text(
+      text = "保存されたリクエストがありません",
+      fontSize = 13.sp
+    )
 
-  if (requests.isEmpty()) {
-    Column(
-      Modifier.fillMaxSize(),
-      verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.CenterHorizontally
+    Button(
+      onClick = newCreateClick,
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(32.dp)
+        .height(48.dp),
     ) {
-      Text(
-        text = "保存されたリクエストがありません",
-        fontSize = 13.sp
-      )
-
-      Button(
-        onClick = newCreateClick,
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(32.dp)
-          .height(48.dp),
-      ) {
-        Text(text = "新規リクエストを作成する")
-      }
+      Text(text = "新規リクエストを作成する")
     }
-    return
   }
-
-  Column(
+  else -> Column(
     Modifier
       .fillMaxSize()
       .verticalScroll(rememberScrollState())) {
     requests.forEachIndexed { index, requestParams ->
       SavedRequest(
         if (index == 0) 8.dp else 0.dp,
-        if (index == requests.size - 1) 8.dp + bottomPadding else 0.dp,
+        if (index == requests.lastIndex) 8.dp + bottomPadding else 0.dp,
         requestParams,
-        edit = { edit(index, it) }
+        watchSync = { watchSync(index, it) },
+        edit = { edit(index, it) },
+        send = send
       )
     }
   }

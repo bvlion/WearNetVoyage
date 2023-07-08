@@ -17,9 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContactMail
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RateReview
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.runtime.Composable
@@ -92,8 +90,8 @@ private val menus = listOf(
 )
 
 sealed class MenuItem(val dist: String, val icon: ImageVector, val onClick: () -> Unit = {}) {
-  object SYNC_TO_WATCH : MenuItem("Watch へ Request を同期", Icons.Filled.Sync)
-  object SYNC_TO_MOBILE : MenuItem("Watch の実行履歴を同期", Icons.Filled.Sync)
+  object SYNC_TO_WATCH : MenuItem("ウェアラブルへ Request を同期", Icons.Filled.Sync)
+  object SYNC_TO_MOBILE : MenuItem("ウェアラブルの実行履歴を同期", Icons.Filled.Sync)
   object EXPORT : MenuItem("Request をエクスポート", Icons.Filled.Upload)
   object IMPORT : MenuItem("Request をインポート", Icons.Filled.Download)
   object TERMS_OF_USE : MenuItem("利用規約", Icons.Filled.Description)

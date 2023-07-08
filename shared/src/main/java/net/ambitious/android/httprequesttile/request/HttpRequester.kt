@@ -12,12 +12,15 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.internal.http.HttpMethod
 import org.json.JSONObject
-import java.net.URLEncoder
+import java.util.Date
 
 class HttpRequester {
   private val client = OkHttpClient()
 
-  suspend fun execute(params: RequestParams): ResponseParams = withContext(Dispatchers.IO) {
+  suspend fun execute(
+    params: RequestParams,
+    isMobile: Boolean = true
+  ): ResponseParams = withContext(Dispatchers.IO) {
     val start = System.currentTimeMillis()
 
     val request = Request.Builder()
@@ -49,9 +52,10 @@ class HttpRequester {
           params.headers.split("\n").associate {
             it.split(":").let { header ->
               if (header.size != 2) {
-                return@let "" to ""
+                "" to ""
+              } else {
+                header[0].trim() to header[1].trim()
               }
-              header[0].trim() to header[1].trim()
             }
           }
             .filter { it.key.isNotEmpty() && it.value.isNotEmpty() }
@@ -70,7 +74,9 @@ class HttpRequester {
         res.code,
         System.currentTimeMillis() - start,
         headerJson.toString(),
-        res.body?.string() ?: ""
+        res.body?.string() ?: "",
+        Date().time,
+        isMobile
       )
     }
   }

@@ -8,31 +8,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.ambitious.android.httprequesttile.data.ResponseParams
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun RequestHistory(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
-  val dialogShown = remember { mutableStateOf(false) }
-  RequestHistoryDetailDialog(dialogShown)
-
+fun RequestHistory(
+  responseParams: ResponseParams,
+  addTopPadding: Dp = 0.dp,
+  addBottomPadding: Dp = 0.dp,
+  modalBottomSheetShow: (ResponseParams) -> Unit,
+) {
   Card(
     modifier = Modifier
-      .clickable { dialogShown.value = true }
+      .clickable { modalBottomSheetShow(responseParams) }
       .fillMaxWidth()
       .padding(8.dp, 8.dp + addTopPadding, 8.dp, 8.dp + addBottomPadding),
     elevation = 2.dp,
@@ -43,11 +49,11 @@ fun RequestHistory(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
     ) {
       Column(modifier = Modifier.padding(start = 16.dp)) {
         Text(
-          text = "モバイルから送信",
+          text = if (responseParams.isMobile) "モバイルから送信" else "ウェアラブルから送信",
           fontSize = 12.sp
         )
         Text(
-          text = "HogeHoge の Request",
+          text = responseParams.title,
           modifier = Modifier.padding(top = 4.dp)
         )
       }
@@ -56,11 +62,11 @@ fun RequestHistory(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
         horizontalAlignment = Alignment.End
       ) {
         Text(
-          text = "Response: 200",
+          text = "Response: ${responseParams.responseCode}",
           fontSize = 14.sp
         )
         Text(
-          text = "2023/05/23 10:33:45",
+          text = getSendDateTime(responseParams.sendDateTime),
           modifier = Modifier.padding(top = 8.dp),
           fontSize = 12.sp
         )
@@ -70,73 +76,107 @@ fun RequestHistory(addTopPadding: Dp = 0.dp, addBottomPadding: Dp = 0.dp) {
 }
 
 @Composable
-fun RequestHistoryList(bottomPadding: Dp = 56.dp) {
-  Column(
-    Modifier
-      .fillMaxSize()
-      .verticalScroll(rememberScrollState())) {
-    repeat(10) {
-      RequestHistory(if (it == 0) 8.dp else 0.dp, if (it == 9) 8.dp + bottomPadding else 0.dp)
+fun RequestHistoryList(
+  responses: List<ResponseParams>,
+  bottomPadding: Dp = 56.dp,
+  modalBottomSheetShow: (ResponseParams) -> Unit = {},
+) {
+  if (responses.isEmpty()) {
+    Column(
+      Modifier
+        .fillMaxSize()
+        .padding(bottom = 24.dp + bottomPadding),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Text(
+        text = "送信履歴がありません",
+        fontSize = 13.sp
+      )
+    }
+  } else {
+    Column(
+      Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())) {
+      responses.forEachIndexed { index, response ->
+        RequestHistory(
+          response,
+          if (index == 0) 8.dp else 0.dp,
+          if (index == responses.lastIndex) 8.dp + bottomPadding else 0.dp,
+          modalBottomSheetShow
+        )
+      }
     }
   }
 }
 
 @Composable
-fun RequestHistoryDetailDialog(dialogShown: MutableState<Boolean>) {
-  if (dialogShown.value) {
-    AlertDialog(
-      onDismissRequest = { dialogShown.value = false },
-      title = {
-        Column {
-          Text(
-            text = "2023/05/23 10:33:45",
-            modifier = Modifier.padding(end = 8.dp),
-            fontSize = 14.sp
-          )
-          Text("HogeHoge の Request")
-        }
-              },
-      text = {
-        Column(modifier = Modifier.padding(8.dp)) {
-          Row {
-            Text(
-              text = "Response Code:",
-              modifier = Modifier.padding(end = 8.dp),
-              fontSize = 14.sp
-            )
-            Text("200")
-          }
-          Text(
-            text = "Response Body:",
-            modifier = Modifier.padding(top = 16.dp),
-            fontSize = 14.sp
-          )
-          Text(
-            text = "ほげほげ",
-            modifier = Modifier.padding(top = 8.dp),
-          )
-          Text(
-            text = "Response Header:",
-            modifier = Modifier.padding(top = 16.dp),
-            fontSize = 12.sp
-          )
-          Text(
-            text = "ほげほげ",
-            modifier = Modifier.padding(top = 8.dp),
-          )
-        }
-             },
-      confirmButton = {
-        TextButton(onClick = { dialogShown.value = false }) { Text("閉じる") }
-      }
+fun RequestHistoryDetailContent(responseParams: ResponseParams, bottomPadding: Dp = 56.dp) {
+  Column(modifier = Modifier.padding(16.dp, 24.dp, 16.dp, 0.dp).verticalScroll(rememberScrollState())) {
+    Text(
+      text = getSendDateTime(responseParams.sendDateTime),
+      modifier = Modifier.padding(end = 8.dp),
+      fontSize = 14.sp
+    )
+    Text(responseParams.title)
+    Row(Modifier.padding(top = 16.dp)) {
+      Text(
+        text = "Response Code:",
+        modifier = Modifier.padding(end = 8.dp),
+        fontSize = 14.sp
+      )
+      Text(responseParams.responseCode.toString())
+    }
+    Text(
+      text = "Response Body:",
+      modifier = Modifier.padding(top = 16.dp),
+      fontSize = 14.sp
+    )
+    Text(
+      text = responseParams.body,
+      modifier = Modifier.padding(top = 8.dp),
+    )
+    Text(
+      text = "Response Header:",
+      modifier = Modifier.padding(top = 16.dp),
+      fontSize = 12.sp
+    )
+    Text(
+      text = responseParams.header,
+      modifier = Modifier.padding(top = 8.dp, bottom = 24.dp + bottomPadding),
     )
   }
 }
 
+private fun getSendDateTime(dateTime: Long): String =
+  Instant.ofEpochMilli(dateTime)
+    .atZone(ZoneId.systemDefault())
+    .format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"))
+
 @Preview(showBackground = true)
 @Composable
+@ExperimentalMaterialApi
 fun RequestHistoryListPreview() {
+  val response = ResponseParams(
+    "HogeHoge の Request",
+    200,
+    45,
+    "aaaa",
+    "bbbb",
+    System.currentTimeMillis(),
+    false
+  )
   MyApplicationTheme {
-    RequestHistoryList()
+    ModalBottomSheetLayout(
+      sheetState = ModalBottomSheetState(ModalBottomSheetValue.Hidden, isSkipHalfExpanded = true),
+      sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+      sheetContent = {
+        RequestHistoryDetailContent(response, 0.dp)
+      }
+    ) {
+      RequestHistoryList(listOf(response))
+    }
   }
 }
+

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 class AppDataStore(context: Context) {
@@ -15,14 +16,23 @@ class AppDataStore(context: Context) {
 
   val getSavedRequest: Flow<String?> = settingsDataStore.data.map { pref ->
     pref[SAVED_REQUEST_KEY]
-  }
+  }.distinctUntilChanged()
 
   suspend fun saveRequest(request: String) = settingsDataStore.edit {
     it[SAVED_REQUEST_KEY] = request
   }
 
+  val getSavedResponse: Flow<String> = settingsDataStore.data.map { pref ->
+    pref[SAVED_RESPONSE_KEY] ?: ""
+  }.distinctUntilChanged()
+
+  suspend fun saveResponse(response: String) = settingsDataStore.edit {
+    it[SAVED_RESPONSE_KEY] = response
+  }
+
   companion object {
     private val SAVED_REQUEST_KEY = stringPreferencesKey("saved_request")
+    private val SAVED_RESPONSE_KEY = stringPreferencesKey("saved_response")
 
     private var dataStore: AppDataStore? = null
     fun getDataStore(context: Context) = dataStore ?: AppDataStore(context).also { dataStore = it }

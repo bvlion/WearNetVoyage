@@ -26,31 +26,31 @@ data class RequestParams(
     const val REQUEST_PARAMS_URI = "/request_params"
     const val REQUEST_PARAMS_LIST_KEY = "request_params_list"
 
-    const val TITLE = "title"
-    const val URL = "url"
-    const val METHOD = "method"
-    const val BODY_TYPE = "bodyType"
-    const val HEADERS = "headers"
-    const val PARAMETERS = "parameters"
-    const val WATCH_SYNC = "watchSync"
-  }
-}
+    private const val TITLE = "title"
+    private const val URL = "url"
+    private const val METHOD = "method"
+    private const val BODY_TYPE = "bodyType"
+    private const val HEADERS = "headers"
+    private const val PARAMETERS = "parameters"
+    private const val WATCH_SYNC = "watchSync"
 
-fun String.parseRequestParams(): List<RequestParams> {
-  val list = mutableListOf<RequestParams>()
-  val jsonArray = JSONArray(this)
-  for (i in 0 until jsonArray.length()) {
-    JSONObject(jsonArray[i].toString()).let {
-      RequestParams(
-        it.getString(RequestParams.TITLE),
-        it.getString(RequestParams.URL),
-        Constant.HttpMethod.valueOf(it.getString(RequestParams.METHOD)),
-        Constant.BodyType.valueOf(it.getString(RequestParams.BODY_TYPE)),
-        it.getString(RequestParams.HEADERS),
-        it.getString(RequestParams.PARAMETERS),
-        it.getBoolean(RequestParams.WATCH_SYNC)
-      )
-    }.let(list::add)
+    fun String.parseRequestParams(): List<RequestParams> {
+      val list = mutableListOf<RequestParams>()
+      val jsonArray = JSONArray(this)
+      for (i in 0 until jsonArray.length()) {
+        JSONObject(jsonArray[i].toString()).let {
+          RequestParams(
+            it.getString(TITLE),
+            it.getString(URL),
+            Constant.HttpMethod.valueOf(it.getString(METHOD)),
+            Constant.BodyType.valueOf(it.getString(BODY_TYPE)),
+            it.getString(HEADERS),
+            it.getString(PARAMETERS),
+            it.getBoolean(WATCH_SYNC)
+          )
+        }.let(list::add)
+      }
+      return list
+    }
   }
-  return list
 }
