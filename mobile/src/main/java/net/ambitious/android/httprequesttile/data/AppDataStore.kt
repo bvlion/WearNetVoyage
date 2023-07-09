@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -30,9 +31,17 @@ class AppDataStore(context: Context) {
     it[SAVED_RESPONSE_KEY] = response
   }
 
+  val getViewMode: Flow<AppConstants.ViewMode> = settingsDataStore.data.map { pref ->
+    AppConstants.ViewMode.values().first { it.type == (pref[VIEW_MODE_KEY] ?: 0) }
+  }
+  suspend fun setViewMode(mode: AppConstants.ViewMode) = settingsDataStore.edit {
+    it[VIEW_MODE_KEY] = mode.type
+  }
+
   companion object {
     private val SAVED_REQUEST_KEY = stringPreferencesKey("saved_request")
     private val SAVED_RESPONSE_KEY = stringPreferencesKey("saved_response")
+    private val VIEW_MODE_KEY = intPreferencesKey("view_mode")
 
     private var dataStore: AppDataStore? = null
     fun getDataStore(context: Context) = dataStore ?: AppDataStore(context).also { dataStore = it }

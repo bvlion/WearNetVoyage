@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -27,13 +28,14 @@ import net.ambitious.android.httprequesttile.compose.RequestHistoryDetailContent
 import net.ambitious.android.httprequesttile.compose.RequestHistoryList
 import net.ambitious.android.httprequesttile.compose.RulesDialogCompose
 import net.ambitious.android.httprequesttile.compose.SavedRequestList
+import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.data.ResponseParams
 import net.ambitious.android.httprequesttile.data.ResponseParams.Companion.parseResponseParams
 import net.ambitious.android.httprequesttile.ui.theme.MainAnimatedVisibility
-import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 
 @ExperimentalMaterialApi
 class MainActivity : ComponentActivity() {
@@ -55,6 +57,7 @@ class MainActivity : ComponentActivity() {
       val savedResponses = viewModel.savedResponse.collectAsState()
       val rules = viewModel.rules.collectAsState()
       val loading = viewModel.loading.collectAsState()
+      val viewMode = viewModel.viewMode.collectAsState()
 
       ErrorDialogCompose(errorDialog.value) {
         viewModel.dismissErrorDialog()
@@ -76,7 +79,11 @@ class MainActivity : ComponentActivity() {
       val response = remember { mutableStateOf<ResponseParams?>(null) }
 
 
-      MyApplicationTheme {
+      AppTheme(when (viewMode.value) {
+        AppConstants.ViewMode.DEFAULT -> isSystemInDarkTheme()
+        AppConstants.ViewMode.LIGHT -> false
+        AppConstants.ViewMode.DARK -> true
+      }) {
         Surface(
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colors.background
@@ -163,6 +170,8 @@ class MainActivity : ComponentActivity() {
                 MainAnimatedVisibility(bottomMenuIndex.value == 3) {
                   MenuList(
                     it.calculateBottomPadding(),
+                    viewMode.value,
+                    saveViewMode = { viewModel.saveViewMode(it) },
                     historyDelete = {
                       viewModel.deleteResponses(scope, scaffoldState)
                     },
@@ -198,7 +207,7 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-  MyApplicationTheme {
+  AppTheme {
     Scaffold(
       topBar = { DummyAdCompose() },
       content = { SavedRequestList(emptyList(), bottomPadding = it.calculateBottomPadding()) },

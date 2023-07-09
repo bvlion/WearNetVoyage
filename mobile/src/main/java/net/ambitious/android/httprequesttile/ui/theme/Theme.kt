@@ -10,31 +10,39 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 
 private val DarkColorPalette = darkColors(
-    primary = Purple200,
-    primaryVariant = Purple700,
-    secondary = Teal200
+    primary = primary,
+    primaryVariant = primaryVariant,
+    secondary = secondary,
+    background = darkBackground,
+    surface = darkSurface,
+    error = darkError,
+    onPrimary = darkOnPrimary,
+    onSecondary = darkOnSecondary,
+    onBackground = darkOnBackground,
+    onSurface = darkOnSurface,
+    onError = darkOnError
 )
 
 private val LightColorPalette = lightColors(
-    primary = Purple500,
-    primaryVariant = Purple700,
-    secondary = Teal200
-
-    /* Other default colors to override
-    background = Color.White,
-    surface = Color.White,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    */
+    primary = primary,
+    primaryVariant = primaryVariant,
+    secondary = secondary,
+    background = lightBackground,
+    surface = lightSurface,
+    error = lightError,
+    onPrimary = lightOnPrimary,
+    onSecondary = lightOnSecondary,
+    onBackground = lightOnBackground,
+    onSurface = lightOnSurface,
+    onError = lightOnError
 )
 
 @Composable
-fun MyApplicationTheme(
+fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

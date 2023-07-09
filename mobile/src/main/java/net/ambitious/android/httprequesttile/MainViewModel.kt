@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.AppDataStore
 import net.ambitious.android.httprequesttile.data.ErrorDetail
 import net.ambitious.android.httprequesttile.data.RequestParams
@@ -46,6 +47,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val _rules = MutableStateFlow("")
   val rules = _rules.asStateFlow()
 
+  private val _viewMode = MutableStateFlow(AppConstants.ViewMode.DEFAULT)
+  val viewMode = _viewMode.asStateFlow()
+
   init {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.getSavedRequest.collect {
@@ -55,6 +59,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.getSavedResponse.collect {
         _savedResponse.value = it
+      }
+    }
+    viewModelScope.launch {
+      dataStore.getViewMode.collect {
+        _viewMode.value = it
       }
     }
   }
@@ -173,6 +182,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       dataStore.saveResponse("")
     }
     showMessageSnackbar(scope, scaffoldState, "実行履歴を削除しました。")
+  }
+
+  fun saveViewMode(viewMode: AppConstants.ViewMode) {
+    _viewMode.value = viewMode
+    viewModelScope.launch {
+      dataStore.setViewMode(viewMode)
+    }
   }
 
   fun dismissErrorDialog() {

@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.RequestParams
-import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 import net.ambitious.android.httprequesttile.ui.theme.noRippleClickable
 
 @Composable
@@ -142,7 +142,7 @@ fun SavedRequestList(
 @Preview(showBackground = true)
 @Composable
 fun SavedRequestListPreview() {
-  MyApplicationTheme {
+  AppTheme {
     SavedRequestList(listOf(
       RequestParams(
         "ぐーぐる",

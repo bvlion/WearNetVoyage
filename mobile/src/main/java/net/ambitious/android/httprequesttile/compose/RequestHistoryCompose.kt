@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.ambitious.android.httprequesttile.data.ResponseParams
-import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -167,7 +167,7 @@ fun RequestHistoryListPreview() {
     System.currentTimeMillis(),
     false
   )
-  MyApplicationTheme {
+  AppTheme {
     ModalBottomSheetLayout(
       sheetState = ModalBottomSheetState(ModalBottomSheetValue.Hidden, isSkipHalfExpanded = true),
       sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),

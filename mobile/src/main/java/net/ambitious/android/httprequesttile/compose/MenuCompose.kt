@@ -59,13 +59,15 @@ import androidx.compose.ui.window.DialogProperties
 import net.ambitious.android.httprequesttile.BuildConfig
 import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
-import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 import net.ambitious.android.httprequesttile.ui.theme.noRippleClickable
 import java.net.URLEncoder
 
 @Composable
 fun MenuList(
   bottomPadding: Dp = 56.dp,
+  viewMode: AppConstants.ViewMode,
+  saveViewMode: (AppConstants.ViewMode) -> Unit = {},
   syncWatch: () -> Unit = {},
   historyDelete: () -> Unit = {},
   savePasteRequest: (String) -> Unit = {},
@@ -183,13 +185,13 @@ fun MenuList(
     ) {
       AppConstants.ViewMode.values().forEach { mode ->
         RadioButton(
-          selected = (mode == AppConstants.ViewMode.DEFAULT),
-          onClick = { }
+          selected = (mode == viewMode),
+          onClick = { saveViewMode(mode) }
         )
         Text(
           modifier = Modifier
             .padding(top = 12.dp)
-            .noRippleClickable { },
+            .noRippleClickable { saveViewMode(mode) },
           fontSize = 15.sp,
           style = MaterialTheme.typography.body1.merge(),
           text = when (mode) {
@@ -332,7 +334,7 @@ fun RulesDialogCompose(
 @Preview(showBackground = true)
 @Composable
 fun MenuListPreview() {
-  MyApplicationTheme {
-    MenuList()
+  AppTheme {
+    MenuList(viewMode = AppConstants.ViewMode.DARK)
   }
 }

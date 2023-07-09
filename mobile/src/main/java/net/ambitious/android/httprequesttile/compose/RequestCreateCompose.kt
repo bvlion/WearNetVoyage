@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.RequestParams
-import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -376,7 +376,7 @@ fun RequestCreate(
 @Preview(showBackground = true)
 @Composable
 fun RequestCreatePreview() {
-  MyApplicationTheme {
+  AppTheme {
     RequestCreate(
       "てすとだよ",
       "https://",

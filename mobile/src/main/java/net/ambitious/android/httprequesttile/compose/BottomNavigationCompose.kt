@@ -15,7 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
+import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 
 @Composable
 fun MenuBottomNavigation(
@@ -49,7 +49,7 @@ sealed class BottomItem(val dist: String, val icon: ImageVector) {
 @Preview(showBackground = true)
 @Composable
 fun BottomNavigationPreview() {
-  MyApplicationTheme {
+  AppTheme {
     MenuBottomNavigation()
   }
 }
