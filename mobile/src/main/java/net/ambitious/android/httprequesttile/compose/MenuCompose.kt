@@ -235,25 +235,17 @@ fun MenuList(
       context.startActivity(
         Intent(
           Intent.ACTION_VIEW,
-          Uri.parse(
-            try {
-              "market://details?id=${BuildConfig.APPLICATION_ID}"
-            } catch (_: ActivityNotFoundException) {
-              "https://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}"
-            }
-          )
+          try {
+            Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
+          } catch (_: ActivityNotFoundException) {
+            Uri.parse("https://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}")
+          }
         )
       )
     }
 
     MenuRow("ご意見", Icons.Filled.ContactMail) {
-      context.startActivity(
-        Intent(
-          Intent.ACTION_VIEW, Uri.parse(
-            "https://docs.google.com/forms/d/e/1FAIpQLSecLnJGQu3C-24UMTcji_jnt7kRqgtTjQglKyA8xu6ILdnrDQ/viewform"
-          )
-        )
-      )
+      context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.INQUIRY_URL)))
     }
 
     Box(modifier = Modifier.padding(bottom = bottomPadding))
