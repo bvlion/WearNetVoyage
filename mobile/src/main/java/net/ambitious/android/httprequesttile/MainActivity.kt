@@ -1,5 +1,8 @@
 package net.ambitious.android.httprequesttile
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -9,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
@@ -23,6 +27,7 @@ import net.ambitious.android.httprequesttile.compose.NativeAdCompose
 import net.ambitious.android.httprequesttile.compose.RequestCreate
 import net.ambitious.android.httprequesttile.compose.RequestHistoryDetailContent
 import net.ambitious.android.httprequesttile.compose.RequestHistoryList
+import net.ambitious.android.httprequesttile.compose.RulesDialogCompose
 import net.ambitious.android.httprequesttile.compose.SavedRequestList
 import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.RequestParams
@@ -45,20 +50,37 @@ class MainActivity : ComponentActivity() {
     setContent {
       val errorDialog = viewModel.errorDialog.collectAsState()
       val scope = rememberCoroutineScope()
+      val scaffoldState = rememberScaffoldState()
 
       val savedRequests = viewModel.savedRequest.collectAsState()
       val savedResponses = viewModel.savedResponse.collectAsState()
-
+      val rules = viewModel.rules.collectAsState()
+      val clipboard = viewModel.clipboard.collectAsState()
+      val paste = viewModel.paste.collectAsState()
       val loading = viewModel.loading.collectAsState()
+      val deleteHistory = viewModel.deleteHistory.collectAsState()
+
+      if (clipboard.value.isNotEmpty()) {
+        val context = LocalContext.current
+        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        viewModel.copyToClipboard(clipboardManager, scope, scaffoldState, ClipData.newPlainText("ClipData", clipboard.value))
+      }
+
+      if (paste.value.isNotEmpty()) {
+        viewModel.saveRequest(scope, scaffoldState, paste.value)
+      }
+
+      if (deleteHistory.value) {
+        viewModel.deleteResponses(scope, scaffoldState)
+      }
 
       ErrorDialogCompose(errorDialog.value) {
         viewModel.dismissErrorDialog()
       }
 
-      val bottomMenuIndex = remember { mutableStateOf(0) }
-      val editRequest = remember { mutableStateOf<RequestParams?>(null) }
-      val editRequestIndex = remember { mutableStateOf(-1) }
-      val response = remember { mutableStateOf<ResponseParams?>(null) }
+      RulesDialogCompose(rules.value) {
+        viewModel.dismissRules()
+      }
 
       BackHandler(viewModel.resultBottomSheet.isVisible) {
         scope.launch {
@@ -66,12 +88,19 @@ class MainActivity : ComponentActivity() {
         }
       }
 
+      val bottomMenuIndex = remember { mutableStateOf(0) }
+      val editRequest = remember { mutableStateOf<RequestParams?>(null) }
+      val editRequestIndex = remember { mutableStateOf(-1) }
+      val response = remember { mutableStateOf<ResponseParams?>(null) }
+
+
       MyApplicationTheme {
         Surface(
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colors.background
         ) {
           Scaffold(
+            scaffoldState = scaffoldState,
             topBar = { NativeAdCompose() },
             content = {
               ModalBottomSheetLayout(
@@ -99,7 +128,7 @@ class MainActivity : ComponentActivity() {
                     newCreateClick = { bottomMenuIndex.value = 1 },
                     bottomPadding = it.calculateBottomPadding(),
                     watchSync = { index, request ->
-                      viewModel.saveRequest(index, request)
+                      viewModel.saveRequest(null, null, index, request)
                     },
                     edit = { index, request ->
                       editRequestIndex.value = index
@@ -107,7 +136,7 @@ class MainActivity : ComponentActivity() {
                       bottomMenuIndex.value = 1
                     },
                     send = {
-                      viewModel.sendRequest(it)
+                      viewModel.sendRequest(scope, scaffoldState, it)
                     }
                   )
                   LoadingCompose(loading.value)
@@ -127,11 +156,11 @@ class MainActivity : ComponentActivity() {
                       bottomMenuIndex.value = 0
                     },
                     save = { index, request ->
-                      viewModel.saveRequest(index, request)
+                      viewModel.saveRequest(scope, scaffoldState, index, request)
                       bottomMenuIndex.value = 0
                     },
                     delete = {
-                      viewModel.deleteRequest(it)
+                      viewModel.deleteRequest(scope, scaffoldState, it)
                       bottomMenuIndex.value = 0
                     }
                   )
@@ -149,7 +178,9 @@ class MainActivity : ComponentActivity() {
                     scope.launch { viewModel.resultBottomSheet.show() }
                   }
                 }
-                MainAnimatedVisibility(bottomMenuIndex.value == 3) { MenuList(it.calculateBottomPadding()) }
+                MainAnimatedVisibility(bottomMenuIndex.value == 3) {
+                  MenuList(it.calculateBottomPadding(), viewModel)
+                }
               }
                       },
             bottomBar = {

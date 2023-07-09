@@ -1,9 +1,12 @@
 package net.ambitious.android.httprequesttile
 
 import android.app.Application
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.ScaffoldState
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +43,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val _loading = MutableStateFlow(false)
   val loading = _loading.asStateFlow()
 
+  private val _rules = MutableStateFlow("")
+  val rules = _rules.asStateFlow()
+
+  private val _clipboard = MutableStateFlow("")
+  val clipboard = _clipboard.asStateFlow()
+
+  private val _sync = MutableStateFlow(false)
+  val sync = _sync.asStateFlow()
+
+  private val _paste = MutableStateFlow("")
+  val paste = _paste.asStateFlow()
+
+  private val _deleteHistory = MutableStateFlow(false)
+  val deleteHistory = _deleteHistory.asStateFlow()
+
   init {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.getSavedRequest.collect {
@@ -53,7 +71,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
-  fun saveRequest(savedIndex: Int, request: RequestParams) {
+  fun saveRequest(scope: CoroutineScope?, scaffoldState: ScaffoldState?, savedIndex: Int, request: RequestParams) {
     viewModelScope.launch(Dispatchers.IO) {
       (savedRequest.value?.parseRequestParams()?.toMutableList() ?: mutableListOf())
         .apply {
@@ -67,9 +85,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .let { JSONArray(it).toString() }
         .let { dataStore.saveRequest(it) }
     }
+    if (scope != null && scaffoldState != null) {
+      showMessageSnackbar(scope, scaffoldState, "「${request.title}」を${if (savedIndex >= 0) "更新" else "作成"}しました。")
+    }
   }
 
-  fun deleteRequest(deleteIndex: Int) {
+  fun deleteRequest(scope: CoroutineScope, scaffoldState: ScaffoldState, deleteIndex: Int) {
     viewModelScope.launch(Dispatchers.IO) {
       savedRequest.value?.run {
         parseRequestParams()
@@ -82,9 +103,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
           .let { dataStore.saveRequest(it) }
       }
     }
+    showMessageSnackbar(scope, scaffoldState, "削除しました。")
   }
 
-  fun sendRequest(request: RequestParams) {
+  fun sendRequest(scope: CoroutineScope, scaffoldState: ScaffoldState, request: RequestParams) {
     _loading.value = true
     val start = System.currentTimeMillis()
     viewModelScope.launch(Dispatchers.IO) {
@@ -102,6 +124,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
       }
       _loading.value = false
+      showMessageSnackbar(scope, scaffoldState, "送信しました。")
 
       if (savedResponse.value.isBlank()) {
         mutableListOf()
@@ -121,6 +144,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       resultBottomSheet.hide()
     }
   }
+
+  fun showMessageSnackbar(scope: CoroutineScope, scaffoldState: ScaffoldState, message: String) {
+    scope.launch {
+      scaffoldState.snackbarHostState.showSnackbar(message)
+    }
+  }
+
+  fun showRules(url: String) {
+    _rules.value = url
+  }
+
+  fun dismissRules() {
+    _rules.value = ""
+  }
+
+  fun copyToClipboard(clipboardManager: ClipboardManager, scope: CoroutineScope, scaffoldState: ScaffoldState, clipData: ClipData) {
+    scope.launch {
+      clipboardManager.setPrimaryClip(clipData)
+    }
+    scope.launch {
+      scaffoldState.snackbarHostState.showSnackbar("クリップボードにコピーしました。")
+    }
+    _clipboard.value = ""
+  }
+
+  fun copyRequests() {
+    _clipboard.value = savedRequest.value ?: ""
+  }
+
+  fun copyResponses() {
+    _clipboard.value = savedResponse.value
+  }
+
+  fun savePasteRequest(requestJson: String) {
+    _paste.value = requestJson
+  }
+
+  fun saveRequest(scope: CoroutineScope, scaffoldState: ScaffoldState, json: String) {
+    viewModelScope.launch(Dispatchers.IO) {
+      dataStore.saveRequest(json)
+    }
+    _paste.value = ""
+    showMessageSnackbar(scope, scaffoldState, "インポートしました。")
+  }
+
+  fun deleteHistory() {
+    _deleteHistory.value = true
+  }
+
+  fun deleteResponses(scope: CoroutineScope, scaffoldState: ScaffoldState) {
+    viewModelScope.launch(Dispatchers.IO) {
+      dataStore.saveResponse("")
+    }
+    _deleteHistory.value = false
+    showMessageSnackbar(scope, scaffoldState, "実行履歴を削除しました。")
+  }
+
+
 
   fun dismissErrorDialog() {
     _errorDialog.value = null
