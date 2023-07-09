@@ -1,6 +1,5 @@
 package net.ambitious.android.httprequesttile.compose
 
-import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
@@ -24,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
@@ -59,16 +57,21 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import net.ambitious.android.httprequesttile.BuildConfig
-import net.ambitious.android.httprequesttile.MainViewModel
-import net.ambitious.android.httprequesttile.data.AppDataStore
+import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.ui.theme.MyApplicationTheme
 import net.ambitious.android.httprequesttile.ui.theme.noRippleClickable
 import java.net.URLEncoder
 
 @Composable
-@ExperimentalMaterialApi
-fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
+fun MenuList(
+  bottomPadding: Dp = 56.dp,
+  syncWatch: () -> Unit = {},
+  historyDelete: () -> Unit = {},
+  savePasteRequest: (String) -> Unit = {},
+  copyToClipboard: (Boolean) -> Unit = {},
+  showRules: (String) -> Unit = {}
+) {
   val context = LocalContext.current
 
   val deleteClick = remember { mutableStateOf(false) }
@@ -83,7 +86,7 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
       confirmButton = {
         TextButton(onClick = {
           deleteClick.value = false
-          viewModel.deleteHistory()
+          historyDelete()
         }) { Text("削除する") }
       }
     )
@@ -154,7 +157,7 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
                   return@Button
                 }
 
-                viewModel.savePasteRequest(pasteText.value)
+                savePasteRequest(pasteText.value)
                 pasteCheck.value = false
                 pasteText.value = ""
                 pasteError.value = ""
@@ -178,9 +181,9 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
         .fillMaxWidth()
         .padding(start = 4.dp, top = 16.dp)
     ) {
-      AppDataStore.ViewMode.values().forEach { mode ->
+      AppConstants.ViewMode.values().forEach { mode ->
         RadioButton(
-          selected = (mode == AppDataStore.ViewMode.DEFAULT),
+          selected = (mode == AppConstants.ViewMode.DEFAULT),
           onClick = { }
         )
         Text(
@@ -190,18 +193,20 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
           fontSize = 15.sp,
           style = MaterialTheme.typography.body1.merge(),
           text = when (mode) {
-            AppDataStore.ViewMode.DEFAULT -> "デフォルト"
-            AppDataStore.ViewMode.LIGHT -> "ライト"
-            AppDataStore.ViewMode.DARK -> "ダーク"
+            AppConstants.ViewMode.DEFAULT -> "デフォルト"
+            AppConstants.ViewMode.LIGHT -> "ライト"
+            AppConstants.ViewMode.DARK -> "ダーク"
           }
         )
       }
     }
 
-    MenuRow("ウェアラブルと同期", Icons.Filled.Sync) {}
+    MenuRow("ウェアラブルと同期", Icons.Filled.Sync) {
+      syncWatch()
+    }
 
     MenuRow("Request をエクスポート", Icons.Filled.Upload) {
-      viewModel.copyRequests()
+      copyToClipboard(true)
     }
 
     MenuRow("Request をインポート", Icons.Filled.Download) {
@@ -209,7 +214,7 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
     }
 
     MenuRow("実行履歴をエクスポート", Icons.Filled.Upload) {
-      viewModel.copyResponses()
+      copyToClipboard(false)
     }
 
     MenuRow("実行履歴を削除", Icons.Filled.Delete) {
@@ -217,11 +222,11 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
     }
 
     MenuRow("利用規約", Icons.Filled.Description) {
-      viewModel.showRules("")
+      showRules(AppConstants.TERMS_OF_USE_URL)
     }
 
     MenuRow("プライバシー・ポリシー", Icons.Filled.Description) {
-      viewModel.showRules("")
+      showRules(AppConstants.PRIVACY_POLICY_URL)
     }
 
     MenuRow("レビューする", Icons.Filled.RateReview) {
@@ -254,7 +259,7 @@ fun MenuList(bottomPadding: Dp = 56.dp, viewModel: MainViewModel) {
 }
 
 @Composable
-fun MenuRow(dist: String, icon: ImageVector, click: () -> Unit) {
+private fun MenuRow(dist: String, icon: ImageVector, click: () -> Unit) {
   Row(
     modifier = Modifier
       .fillMaxWidth()
@@ -325,10 +330,9 @@ fun RulesDialogCompose(
 }
 
 @Preview(showBackground = true)
-@ExperimentalMaterialApi
 @Composable
 fun MenuListPreview() {
   MyApplicationTheme {
-    MenuList(viewModel = MainViewModel(LocalContext.current as Application))
+    MenuList()
   }
 }

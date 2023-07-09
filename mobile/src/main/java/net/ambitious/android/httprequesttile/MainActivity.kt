@@ -1,6 +1,5 @@
 package net.ambitious.android.httprequesttile
 
-import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
@@ -12,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
@@ -46,6 +44,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     MobileAds.initialize(this)
     viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+    val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     setContent {
       val errorDialog = viewModel.errorDialog.collectAsState()
@@ -55,24 +54,7 @@ class MainActivity : ComponentActivity() {
       val savedRequests = viewModel.savedRequest.collectAsState()
       val savedResponses = viewModel.savedResponse.collectAsState()
       val rules = viewModel.rules.collectAsState()
-      val clipboard = viewModel.clipboard.collectAsState()
-      val paste = viewModel.paste.collectAsState()
       val loading = viewModel.loading.collectAsState()
-      val deleteHistory = viewModel.deleteHistory.collectAsState()
-
-      if (clipboard.value.isNotEmpty()) {
-        val context = LocalContext.current
-        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        viewModel.copyToClipboard(clipboardManager, scope, scaffoldState, ClipData.newPlainText("ClipData", clipboard.value))
-      }
-
-      if (paste.value.isNotEmpty()) {
-        viewModel.saveRequest(scope, scaffoldState, paste.value)
-      }
-
-      if (deleteHistory.value) {
-        viewModel.deleteResponses(scope, scaffoldState)
-      }
 
       ErrorDialogCompose(errorDialog.value) {
         viewModel.dismissErrorDialog()
@@ -179,7 +161,21 @@ class MainActivity : ComponentActivity() {
                   }
                 }
                 MainAnimatedVisibility(bottomMenuIndex.value == 3) {
-                  MenuList(it.calculateBottomPadding(), viewModel)
+                  MenuList(
+                    it.calculateBottomPadding(),
+                    historyDelete = {
+                      viewModel.deleteResponses(scope, scaffoldState)
+                    },
+                    savePasteRequest = {
+                      viewModel.saveRequest(scope, scaffoldState, it)
+                    },
+                    copyToClipboard = {
+                      viewModel.copyToClipboard(clipboardManager, scope, scaffoldState, it)
+                    },
+                    showRules = {
+                      viewModel.showRules(it)
+                    }
+                  )
                 }
               }
                       },

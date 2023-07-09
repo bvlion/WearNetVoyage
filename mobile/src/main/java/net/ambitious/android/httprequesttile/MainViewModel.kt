@@ -46,18 +46,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val _rules = MutableStateFlow("")
   val rules = _rules.asStateFlow()
 
-  private val _clipboard = MutableStateFlow("")
-  val clipboard = _clipboard.asStateFlow()
-
-  private val _sync = MutableStateFlow(false)
-  val sync = _sync.asStateFlow()
-
-  private val _paste = MutableStateFlow("")
-  val paste = _paste.asStateFlow()
-
-  private val _deleteHistory = MutableStateFlow(false)
-  val deleteHistory = _deleteHistory.asStateFlow()
-
   init {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.getSavedRequest.collect {
@@ -159,49 +147,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     _rules.value = ""
   }
 
-  fun copyToClipboard(clipboardManager: ClipboardManager, scope: CoroutineScope, scaffoldState: ScaffoldState, clipData: ClipData) {
+  fun copyToClipboard(clipboardManager: ClipboardManager, scope: CoroutineScope, scaffoldState: ScaffoldState, isRequestCopy: Boolean) {
+    val clipData = if (isRequestCopy) {
+      ClipData.newPlainText("request", savedRequest.value)
+    } else {
+      ClipData.newPlainText("response", savedResponse.value)
+    }
     scope.launch {
       clipboardManager.setPrimaryClip(clipData)
     }
     scope.launch {
       scaffoldState.snackbarHostState.showSnackbar("クリップボードにコピーしました。")
     }
-    _clipboard.value = ""
-  }
-
-  fun copyRequests() {
-    _clipboard.value = savedRequest.value ?: ""
-  }
-
-  fun copyResponses() {
-    _clipboard.value = savedResponse.value
-  }
-
-  fun savePasteRequest(requestJson: String) {
-    _paste.value = requestJson
   }
 
   fun saveRequest(scope: CoroutineScope, scaffoldState: ScaffoldState, json: String) {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.saveRequest(json)
     }
-    _paste.value = ""
     showMessageSnackbar(scope, scaffoldState, "インポートしました。")
-  }
-
-  fun deleteHistory() {
-    _deleteHistory.value = true
   }
 
   fun deleteResponses(scope: CoroutineScope, scaffoldState: ScaffoldState) {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.saveResponse("")
     }
-    _deleteHistory.value = false
     showMessageSnackbar(scope, scaffoldState, "実行履歴を削除しました。")
   }
-
-
 
   fun dismissErrorDialog() {
     _errorDialog.value = null
