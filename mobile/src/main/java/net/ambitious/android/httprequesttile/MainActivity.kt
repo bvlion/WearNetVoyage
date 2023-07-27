@@ -59,14 +59,6 @@ class MainActivity : ComponentActivity() {
       val loading = viewModel.loading.collectAsState()
       val viewMode = viewModel.viewMode.collectAsState()
 
-      ErrorDialogCompose(errorDialog.value) {
-        viewModel.dismissErrorDialog()
-      }
-
-      RulesDialogCompose(rules.value) {
-        viewModel.dismissRules()
-      }
-
       BackHandler(viewModel.resultBottomSheet.isVisible) {
         scope.launch {
           viewModel.resultBottomSheet.hide()
@@ -78,12 +70,15 @@ class MainActivity : ComponentActivity() {
       val editRequestIndex = remember { mutableStateOf(-1) }
       val response = remember { mutableStateOf<ResponseParams?>(null) }
 
+      AppTheme(AppConstants.isDarkMode(viewMode.value, isSystemInDarkTheme())) {
+        ErrorDialogCompose(errorDialog.value) {
+          viewModel.dismissErrorDialog()
+        }
 
-      AppTheme(when (viewMode.value) {
-        AppConstants.ViewMode.DEFAULT -> isSystemInDarkTheme()
-        AppConstants.ViewMode.LIGHT -> false
-        AppConstants.ViewMode.DARK -> true
-      }) {
+        RulesDialogCompose(rules.value) {
+          viewModel.dismissRules()
+        }
+
         Surface(
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colors.background

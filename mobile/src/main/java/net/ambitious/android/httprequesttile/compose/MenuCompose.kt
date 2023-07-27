@@ -5,9 +5,11 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,6 +77,7 @@ fun MenuList(
   showRules: (String) -> Unit = {}
 ) {
   val context = LocalContext.current
+  val isSystemInDarkTheme = isSystemInDarkTheme()
 
   val deleteClick = remember { mutableStateOf(false) }
   if (deleteClick.value) {
@@ -224,11 +227,23 @@ fun MenuList(
     }
 
     MenuRow("利用規約", Icons.Filled.Description) {
-      showRules(AppConstants.TERMS_OF_USE_URL)
+      showRules(
+        if (AppConstants.isDarkMode(viewMode, isSystemInDarkTheme)) {
+          AppConstants.DARK_TERMS_OF_USE_URL
+        } else {
+          AppConstants.LIGHT_TERMS_OF_USE_URL
+        }
+      )
     }
 
     MenuRow("プライバシー・ポリシー", Icons.Filled.Description) {
-      showRules(AppConstants.PRIVACY_POLICY_URL)
+      showRules(
+        if (AppConstants.isDarkMode(viewMode, isSystemInDarkTheme)) {
+          AppConstants.DARK_PRIVACY_POLICY_URL
+        } else {
+          AppConstants.LIGHT_PRIVACY_POLICY_URL
+        }
+      )
     }
 
     MenuRow("レビューする", Icons.Filled.RateReview) {
@@ -277,14 +292,6 @@ fun RulesDialogCompose(
   if (url.isNotEmpty()) {
     val loading = remember { mutableStateOf(true) }
 
-    val textColor = URLEncoder.encode(
-      String.format("#%06X", 0xFFFFFF and MaterialTheme.colors.onBackground.toArgb()),
-      "UTF-8"
-    )
-    val backgroundColor = URLEncoder.encode(
-      String.format("#%06X", 0xFFFFFF and MaterialTheme.colors.background.toArgb()),
-      "UTF-8"
-    )
     AlertDialog(
       onDismissRequest = dismissClick,
       text = {
@@ -300,7 +307,8 @@ fun RulesDialogCompose(
             factory = ::WebView,
             update = {
               it.setBackgroundColor(Color.TRANSPARENT)
-              it.loadUrl(String.format(url, textColor, backgroundColor))
+              it.settings.cacheMode = WebSettings.LOAD_NO_CACHE
+              it.loadUrl(url)
               it.webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                   super.onPageStarted(view, url, favicon)
