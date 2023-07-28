@@ -4,7 +4,7 @@
  * changes to the libraries and their usages.
  */
 
-package net.ambitious.android.httprequesttile.presentation
+package net.ambitious.android.httprequesttile
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,7 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import net.ambitious.android.httprequesttile.R
-import net.ambitious.android.httprequesttile.presentation.theme.HttpRequestTileTheme
+import net.ambitious.android.httprequesttile.theme.HttpRequestTileTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

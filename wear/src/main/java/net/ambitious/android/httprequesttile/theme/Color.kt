@@ -1,4 +1,4 @@
-package net.ambitious.android.httprequesttile.presentation.theme
+package net.ambitious.android.httprequesttile.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.wear.compose.material.Colors
