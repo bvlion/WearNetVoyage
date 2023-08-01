@@ -93,13 +93,9 @@ dependencies {
     implementation 'androidx.compose.material:material:1.4.3'
 
     implementation platform('com.google.firebase:firebase-bom:31.1.1')
-    implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-auth-ktx'
 
     implementation 'androidx.datastore:datastore-preferences:1.0.0'
-    def room_version = captureVersion(implementation("androidx.room:room-runtime:2.5.1"))
-    annotationProcessor "androidx.room:room-compiler:$room_version"
 
     testImplementation 'junit:junit:4.13.2'
 
