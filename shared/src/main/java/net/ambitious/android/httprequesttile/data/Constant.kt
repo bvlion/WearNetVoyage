@@ -10,4 +10,7 @@ object Constant {
   enum class HttpMethod {
     GET, POST, PUT, PATCH, DELETE;
   }
+
+  const val WEAR_CAPABILITY = "wear"
+  const val MOBILE_CAPABILITY = "mobile"
 }
