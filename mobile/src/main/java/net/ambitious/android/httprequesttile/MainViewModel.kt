@@ -62,8 +62,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       }
     }
     viewModelScope.launch {
-      dataStore.getViewMode.collect {
-        _viewMode.value = it
+      dataStore.getViewType.collect { type ->
+        _viewMode.value = AppConstants.ViewMode.values().first { it.type == type }
       }
     }
   }
@@ -187,7 +187,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   fun saveViewMode(viewMode: AppConstants.ViewMode) {
     _viewMode.value = viewMode
     viewModelScope.launch {
-      dataStore.setViewMode(viewMode)
+      dataStore.setViewType(viewMode.type)
     }
   }
 

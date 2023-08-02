@@ -31,17 +31,16 @@ class AppDataStore(context: Context) {
     it[SAVED_RESPONSE_KEY] = response
   }
 
-  val getViewMode: Flow<AppConstants.ViewMode> = settingsDataStore.data.map { pref ->
-    AppConstants.ViewMode.values().first { it.type == (pref[VIEW_MODE_KEY] ?: 0) }
-  }
-  suspend fun setViewMode(mode: AppConstants.ViewMode) = settingsDataStore.edit {
-    it[VIEW_MODE_KEY] = mode.type
+  val getViewType: Flow<Int> = settingsDataStore.data.map { it[VIEW_TYPE_KEY] ?: 0 }
+
+  suspend fun setViewType(type: Int) = settingsDataStore.edit {
+    it[VIEW_TYPE_KEY] = type
   }
 
   companion object {
     private val SAVED_REQUEST_KEY = stringPreferencesKey("saved_request")
     private val SAVED_RESPONSE_KEY = stringPreferencesKey("saved_response")
-    private val VIEW_MODE_KEY = intPreferencesKey("view_mode")
+    private val VIEW_TYPE_KEY = intPreferencesKey("view_type")
 
     private var dataStore: AppDataStore? = null
     fun getDataStore(context: Context) = dataStore ?: AppDataStore(context).also { dataStore = it }
