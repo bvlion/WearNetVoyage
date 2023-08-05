@@ -16,6 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.launch
 import net.ambitious.android.httprequesttile.compose.DummyAdCompose
 import net.ambitious.android.httprequesttile.compose.ErrorDialogCompose
@@ -38,9 +41,11 @@ import net.ambitious.android.httprequesttile.ui.theme.MainAnimatedVisibility
 import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 
 @ExperimentalMaterialApi
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListener {
 
   private lateinit var viewModel: MainViewModel
+
+  private val messageClient by lazy { Wearable.getMessageClient(this) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -196,6 +201,19 @@ class MainActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  override fun onMessageReceived(messageEvent: MessageEvent) {
+  }
+
+  override fun onResume() {
+    super.onResume()
+    messageClient.addListener(this)
+  }
+
+  override fun onPause() {
+    super.onPause()
+    messageClient.removeListener(this)
   }
 }
 
