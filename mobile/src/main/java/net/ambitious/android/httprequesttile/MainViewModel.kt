@@ -15,8 +15,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import net.ambitious.android.httprequesttile.data.AppConstants
@@ -63,36 +65,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.getSavedRequest.collect { value ->
         _savedRequest.value = value
-          val watchSavedRequests = value?.let {
-            value.parseRequestParams()
-              .filter { it.watchSync }
-              .map { it.toJsonString() }
-              .let {
-                if (it.isEmpty()) {
-                  byteArrayOf()
-                } else {
-                  JSONArray(it).toString().toByteArray()
-                }
-              }
-          } ?: byteArrayOf()
-          try {
-            val nodes = capabilityClient
-              .getCapability(Constant.WEAR_CAPABILITY, CapabilityClient.FILTER_REACHABLE)
-              .await()
-              .nodes
-
-            nodes.map { node ->
-              async {
-                messageClient.sendMessage(
-                  node.id,
-                  Constant.WEAR_SAVE_REQUEST_PATH,
-                  watchSavedRequests
-                ).await()
-              }
-            }.awaitAll()
-          } catch (exception: Exception) {
-            // TODO Firebase Crashlytics
-          }
+        requestsSyncToWear()
       }
     }
     viewModelScope.launch(Dispatchers.IO) {
@@ -104,6 +77,54 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       dataStore.getViewType.collect { type ->
         _viewMode.value = AppConstants.ViewMode.values().first { it.type == type }
       }
+    }
+  }
+
+  private suspend fun requestsSyncToWear() {
+    val watchSavedRequests = dataStore.getSavedRequest.first()?.let { value ->
+      value.parseRequestParams()
+        .filter { it.watchSync }
+        .map { it.toJsonString() }
+        .let {
+          if (it.isEmpty()) {
+            byteArrayOf()
+          } else {
+            JSONArray(it).toString().toByteArray()
+          }
+        }
+    } ?: byteArrayOf()
+    sendMessageToWear(Constant.WEAR_SAVE_REQUEST_PATH, watchSavedRequests)
+  }
+
+  fun requestResponsesToWear() {
+    viewModelScope.launch(Dispatchers.IO) {
+      sendMessageToWear(Constant.WEAR_REQUEST_RESPONSE_PATH, byteArrayOf())
+    }
+  }
+
+  fun saveWearResponses(responses: String) {
+    viewModelScope.launch(Dispatchers.IO) {
+      responses.parseResponseParams().forEach {
+        saveResponses(it)
+      }
+      sendMessageToWear(Constant.WEAR_SAVED_RESPONSE_PATH, byteArrayOf())
+    }
+  }
+
+  private suspend fun sendMessageToWear(path: String, data: ByteArray) = coroutineScope {
+    try {
+      val nodes = capabilityClient
+        .getCapability(Constant.WEAR_CAPABILITY, CapabilityClient.FILTER_REACHABLE)
+        .await()
+        .nodes
+
+      nodes.map { node ->
+        async {
+          messageClient.sendMessage(node.id, path, data).await()
+        }
+      }.awaitAll()
+    } catch (exception: Exception) {
+      // TODO Firebase Crashlytics
     }
   }
 
@@ -161,18 +182,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       }
       _loading.value = false
       showMessageSnackbar(scope, scaffoldState, "送信しました。")
-
-      if (savedResponse.value.isBlank()) {
-        mutableListOf()
-      } else {
-        savedResponse.value.parseResponseParams().toMutableList()
-      }
-        .apply { add(response) }
-        .sortedByDescending { it.sendDateTime }
-        .map { it.toJsonString() }
-        .let { JSONArray(it).toString() }
-        .let { dataStore.saveResponse(it) }
+      saveResponses(response)
     }
+  }
+
+  private suspend fun saveResponses(response: ResponseParams) {
+    if (savedResponse.value.isBlank()) {
+      mutableListOf()
+    } else {
+      savedResponse.value.parseResponseParams().toMutableList()
+    }
+      .apply { add(response) }
+      .sortedByDescending { it.sendDateTime }
+      .map { it.toJsonString() }
+      .let { JSONArray(it).toString() }
+      .let { dataStore.saveResponse(it) }
   }
 
   fun hideBottomSheet(scope: CoroutineScope) {
@@ -232,5 +256,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
   fun dismissErrorDialog() {
     _errorDialog.value = null
+  }
+
+  fun syncWatch(scope: CoroutineScope, scaffoldState: ScaffoldState) {
+    viewModelScope.launch(Dispatchers.IO) {
+      requestsSyncToWear()
+      sendMessageToWear(Constant.WEAR_REQUEST_RESPONSE_PATH, byteArrayOf())
+    }
+    showMessageSnackbar(scope, scaffoldState, "ウェアラブルと同期しました。")
   }
 }

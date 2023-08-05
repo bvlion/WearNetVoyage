@@ -15,5 +15,8 @@ object Constant {
   const val MOBILE_CAPABILITY = "mobile"
 
   const val WEAR_SAVE_REQUEST_PATH = "/save-request-params"
-  const val WEAR_REQUEST_RESPONSE_PATH = "/request-to-send-response"
+  const val WEAR_REQUEST_RESPONSE_PATH = "/request-to-send-responses"
+  const val WEAR_SAVED_RESPONSE_PATH = "/saved-send-responses"
+
+  const val MOBILE_SAVE_RESPONSE_PATH = "/save-wear-responses"
 }

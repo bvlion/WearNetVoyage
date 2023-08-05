@@ -172,6 +172,9 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
                     it.calculateBottomPadding(),
                     viewMode.value,
                     saveViewMode = { viewModel.saveViewMode(it) },
+                    syncWatch = {
+                      viewModel.syncWatch(scope, scaffoldState)
+                    },
                     historyDelete = {
                       viewModel.deleteResponses(scope, scaffoldState)
                     },
@@ -204,11 +207,18 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
   }
 
   override fun onMessageReceived(messageEvent: MessageEvent) {
+    if (messageEvent.path == Constant.MOBILE_SAVE_RESPONSE_PATH) {
+      val responses = String(messageEvent.data)
+      if (responses.isNotEmpty()) {
+        viewModel.saveWearResponses(responses)
+      }
+    }
   }
 
   override fun onResume() {
     super.onResume()
     messageClient.addListener(this)
+    viewModel.requestResponsesToWear()
   }
 
   override fun onPause() {
