@@ -23,9 +23,6 @@ data class RequestParams(
   }.toString()
 
   companion object {
-    const val REQUEST_PARAMS_URI = "/request_params"
-    const val REQUEST_PARAMS_LIST_KEY = "request_params_list"
-
     private const val TITLE = "title"
     private const val URL = "url"
     private const val METHOD = "method"

@@ -9,13 +9,19 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.ScaffoldState
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.wearable.CapabilityClient
+import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.AppDataStore
+import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.ErrorDetail
 import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
@@ -29,6 +35,9 @@ import java.util.Date
 class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val dataStore = AppDataStore.getDataStore(application)
   private val requester = HttpRequester()
+
+  private val messageClient by lazy { Wearable.getMessageClient(application) }
+  private val capabilityClient by lazy { Wearable.getCapabilityClient(application) }
 
   val resultBottomSheet = ModalBottomSheetState(ModalBottomSheetValue.Hidden, isSkipHalfExpanded = true)
 
@@ -52,8 +61,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
   init {
     viewModelScope.launch(Dispatchers.IO) {
-      dataStore.getSavedRequest.collect {
-        _savedRequest.value = it
+      dataStore.getSavedRequest.collect { value ->
+        _savedRequest.value = value
+          val watchSavedRequests = value?.let {
+            value.parseRequestParams()
+              .filter { it.watchSync }
+              .map { it.toJsonString() }
+              .let {
+                if (it.isEmpty()) {
+                  byteArrayOf()
+                } else {
+                  JSONArray(it).toString().toByteArray()
+                }
+              }
+          } ?: byteArrayOf()
+          try {
+            val nodes = capabilityClient
+              .getCapability(Constant.WEAR_CAPABILITY, CapabilityClient.FILTER_REACHABLE)
+              .await()
+              .nodes
+
+            nodes.map { node ->
+              async {
+                messageClient.sendMessage(
+                  node.id,
+                  Constant.WEAR_SAVE_REQUEST_PATH,
+                  watchSavedRequests
+                ).await()
+              }
+            }.awaitAll()
+          } catch (exception: Exception) {
+            // TODO Firebase Crashlytics
+          }
       }
     }
     viewModelScope.launch(Dispatchers.IO) {
@@ -142,7 +181,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
-  fun showMessageSnackbar(scope: CoroutineScope, scaffoldState: ScaffoldState, message: String) {
+  private fun showMessageSnackbar(scope: CoroutineScope, scaffoldState: ScaffoldState, message: String) {
     scope.launch {
       scaffoldState.snackbarHostState.showSnackbar(message)
     }
