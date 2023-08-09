@@ -31,6 +31,7 @@ class MobilesDataListenerService : WearableListenerService() {
       Constant.WEAR_SAVE_REQUEST_PATH ->
         scope.launch {
           dataStore.saveRequest(String(messageEvent.data))
+          MainTileService.tileUpdate(this@MobilesDataListenerService)
         }
       Constant.WEAR_REQUEST_RESPONSE_PATH ->
         scope.launch {
