@@ -19,6 +19,7 @@ import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.tools.TileLayoutPreview
 import com.google.android.horologist.tiles.render.SingleTileLayoutRenderer
 import net.ambitious.android.httprequesttile.R
+import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.theme.LinkTileTheme
@@ -53,8 +54,8 @@ private fun linkTileLayout(
       .setModifiers(
         ModifiersBuilders.Modifiers.Builder().setClickable(
           ModifiersBuilders.Clickable.Builder()
-            .setId("")
-            .setOnClick(ActionBuilders.LaunchAction.Builder().build())
+            .setId(AppConstants.START_MOBILE_ACTIVITY)
+            .setOnClick(ActionBuilders.LoadAction.Builder().build())
             .build()
         )
           .build()
@@ -76,8 +77,8 @@ private fun linkTileLayout(
       context,
       "同期",
       ModifiersBuilders.Clickable.Builder()
-        .setId("")
-        .setOnClick(ActionBuilders.LaunchAction.Builder().build())
+        .setId(AppConstants.SYNC_STORE_DATA)
+        .setOnClick(ActionBuilders.LoadAction.Builder().build())
         .build(),
       deviceParameters
     )

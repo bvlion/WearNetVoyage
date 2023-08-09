@@ -10,6 +10,7 @@ import com.google.android.horologist.tiles.SuspendingTileService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.AppDataStore
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.tile.LinkTileRenderer
@@ -33,8 +34,11 @@ class MainTileService : SuspendingTileService() {
   override suspend fun resourcesRequest(requestParams: RequestBuilders.ResourcesRequest): ResourceBuilders.Resources =
     render.produceRequestedResources(true, requestParams)
 
-  override suspend fun tileRequest(requestParams: RequestBuilders.TileRequest): TileBuilders.Tile =
-    render.renderTimeline(
+  override suspend fun tileRequest(requestParams: RequestBuilders.TileRequest): TileBuilders.Tile {
+    if (requestParams.state?.lastClickableId == AppConstants.START_MOBILE_ACTIVITY) {
+      AppConstants.startMobileActivity(this, lifecycleScope)
+    }
+    return render.renderTimeline(
       LinkTileState(
         savedRequest.value?.let {
           if (it.isEmpty()) {
@@ -46,6 +50,7 @@ class MainTileService : SuspendingTileService() {
       ),
       requestParams
     )
+  }
 
   private val render by lazy { LinkTileRenderer(this) }
 

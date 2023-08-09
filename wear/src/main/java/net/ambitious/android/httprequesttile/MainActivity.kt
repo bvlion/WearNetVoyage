@@ -1,7 +1,5 @@
 package net.ambitious.android.httprequesttile
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,35 +17,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import androidx.wear.remote.interactions.RemoteActivityHelper
-import androidx.wear.widget.ConfirmationOverlay
-import kotlinx.coroutines.guava.await
-import kotlinx.coroutines.launch
+import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.theme.HttpRequestTileTheme
 
 class MainActivity : ComponentActivity() {
-
-  private val remoteActivityHelper by lazy { RemoteActivityHelper(this) }
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
-      WearApp(::startMobileActivity)
-    }
-  }
-
-  private fun startMobileActivity() {
-    lifecycleScope.launch {
-      try {
-        remoteActivityHelper.startRemoteActivity(
-          Intent(Intent.ACTION_VIEW)
-            .addCategory(Intent.CATEGORY_BROWSABLE)
-            .setData(Uri.parse("httprequesttile://start"))
-        ).await()
-      } catch (e: Exception) {
-        ConfirmationOverlay()
-          .setType(ConfirmationOverlay.FAILURE_ANIMATION)
-          .showOn(this@MainActivity)
+      WearApp {
+        AppConstants.startMobileActivity(this, lifecycleScope)
       }
     }
   }
