@@ -1,4 +1,4 @@
-package net.ambitious.android.httprequesttile
+package net.ambitious.android.httprequesttile.service
 
 import android.content.Context
 import androidx.lifecycle.lifecycleScope

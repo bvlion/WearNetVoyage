@@ -1,4 +1,4 @@
-package net.ambitious.android.httprequesttile
+package net.ambitious.android.httprequesttile.service
 
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.MessageEvent
