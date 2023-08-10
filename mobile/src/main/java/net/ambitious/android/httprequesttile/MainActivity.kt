@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
@@ -43,14 +43,12 @@ import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 @ExperimentalMaterialApi
 class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListener {
 
-  private lateinit var viewModel: MainViewModel
-
+  private val viewModel by viewModels<MainViewModel>()
   private val messageClient by lazy { Wearable.getMessageClient(this) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     MobileAds.initialize(this)
-    viewModel = ViewModelProvider(this)[MainViewModel::class.java]
     val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     setContent {
