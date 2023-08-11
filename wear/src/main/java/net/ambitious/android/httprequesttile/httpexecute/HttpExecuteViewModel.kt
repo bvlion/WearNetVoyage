@@ -4,13 +4,14 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import net.ambitious.android.httprequesttile.data.AppDataStore
-import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParam
-import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.data.ResponseParams
 import net.ambitious.android.httprequesttile.data.ResponseParams.Companion.parseResponseParams
 import net.ambitious.android.httprequesttile.request.HttpRequester
@@ -43,19 +44,29 @@ class HttpExecuteViewModel(application: Application) : AndroidViewModel(applicat
     val request = param.parseRequestParam()
     val start = System.currentTimeMillis()
     viewModelScope.launch(Dispatchers.IO) {
-      val response = try {
-        requester.execute(request, false)
-      } catch (e: Exception) {
-        ResponseParams(
-          request.title,
-          -1,
-          System.currentTimeMillis() - start,
-          "",
-          "通信エラーが発生しました。\n${e.message}",
-          Date().time,
-          false
-        )
+      val networkDeferred = async(Dispatchers.IO) {
+        try {
+          requester.execute(request, false)
+        } catch (e: Exception) {
+          ResponseParams(
+            request.title,
+            -1,
+            System.currentTimeMillis() - start,
+            "",
+            "通信エラーが発生しました。\n${e.message}",
+            Date().time,
+            false
+          )
+        }
       }
+      val timerDeferred = async(Dispatchers.IO) {
+        delay(1500)
+      }
+
+      val response = listOf(networkDeferred, timerDeferred).awaitAll()
+        .filterIsInstance<ResponseParams>()
+        .first()
+
       if (_savedResponse.value.isBlank()) {
         mutableListOf()
       } else {
