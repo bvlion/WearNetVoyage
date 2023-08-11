@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.ambitious.android.httprequesttile.data.ResponseParams
 import net.ambitious.android.httprequesttile.ui.theme.AppTheme
+import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -127,6 +128,14 @@ fun RequestHistoryDetailContent(responseParams: ResponseParams, bottomPadding: D
         fontSize = 14.sp
       )
       Text(responseParams.responseCode.toString())
+    }
+    Row(Modifier.padding(top = 16.dp)) {
+      Text(
+        text = "実行時間:",
+        modifier = Modifier.padding(end = 8.dp),
+        fontSize = 14.sp
+      )
+      Text("${NumberFormat.getNumberInstance().format(responseParams.execTime)} msec")
     }
     Text(
       text = "Response Body:",
