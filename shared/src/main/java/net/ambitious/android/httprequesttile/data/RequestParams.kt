@@ -35,19 +35,22 @@ data class RequestParams(
       val list = mutableListOf<RequestParams>()
       val jsonArray = JSONArray(this)
       for (i in 0 until jsonArray.length()) {
-        JSONObject(jsonArray[i].toString()).let {
-          RequestParams(
-            it.getString(TITLE),
-            it.getString(URL),
-            Constant.HttpMethod.valueOf(it.getString(METHOD)),
-            Constant.BodyType.valueOf(it.getString(BODY_TYPE)),
-            it.getString(HEADERS),
-            it.getString(PARAMETERS),
-            it.getBoolean(WATCH_SYNC)
-          )
-        }.let(list::add)
+        list.add(jsonArray[i].toString().parseRequestParam())
       }
       return list
     }
+
+    fun String.parseRequestParam(): RequestParams =
+      JSONObject(this).let {
+        RequestParams(
+          it.getString(TITLE),
+          it.getString(URL),
+          Constant.HttpMethod.valueOf(it.getString(METHOD)),
+          Constant.BodyType.valueOf(it.getString(BODY_TYPE)),
+          it.getString(HEADERS),
+          it.getString(PARAMETERS),
+          it.getBoolean(WATCH_SYNC)
+        )
+      }
   }
 }

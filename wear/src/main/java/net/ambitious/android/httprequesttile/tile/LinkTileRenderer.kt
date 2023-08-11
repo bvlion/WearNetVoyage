@@ -36,8 +36,12 @@ class LinkTileRenderer(context: Context) : SingleTileLayoutRenderer<LinkTileStat
       state = state,
       requestClickableFactory = { requestParams ->
         ModifiersBuilders.Clickable.Builder()
-          .setId(requestParams.url)
-          .setOnClick(ActionBuilders.LaunchAction.Builder().build())
+          .setId(requestParams.title)
+          .setOnClick(
+            ActionBuilders.LaunchAction.Builder()
+              .setAndroidActivity(ClickAction.requestExecute(requestParams))
+              .build()
+          )
           .build()
       }
     )
