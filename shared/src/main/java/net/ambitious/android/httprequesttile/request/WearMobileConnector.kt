@@ -13,14 +13,26 @@ class WearMobileConnector(context: Context) {
   private val messageClient by lazy { Wearable.getMessageClient(context) }
   private val capabilityClient by lazy { Wearable.getCapabilityClient(context) }
 
-  suspend fun sendMessageToMobile(path: String, data: ByteArray = byteArrayOf()) =
-    sendMessage(MOBILE_CAPABILITY, path, data)
+  suspend fun sendMessageToMobile(
+    path: String,
+    data: ByteArray = byteArrayOf(),
+    successProcess: () -> Unit = {},
+    errorProcess: (Exception) -> Unit = {}
+  ) = sendMessage(MOBILE_CAPABILITY, path, data, successProcess, errorProcess)
 
-  suspend fun sendMessageToWear(path: String, data: ByteArray = byteArrayOf()) =
-    sendMessage(WEAR_CAPABILITY, path, data)
+  suspend fun sendMessageToWear(
+    path: String,
+    data: ByteArray = byteArrayOf(),
+    successProcess: () -> Unit = {},
+    errorProcess: (Exception) -> Unit
+  ) = sendMessage(WEAR_CAPABILITY, path, data, successProcess, errorProcess)
 
   private suspend fun sendMessage(
-    capability: String, path: String, data: ByteArray
+    capability: String,
+    path: String,
+    data: ByteArray,
+    successProcess: () -> Unit,
+    errorProcess: (Exception) -> Unit
   ) = coroutineScope {
     try {
       val nodes = capabilityClient
@@ -28,13 +40,18 @@ class WearMobileConnector(context: Context) {
         .await()
         .nodes
 
+      if (nodes.isEmpty()) {
+        throw Exception("No node was found")
+      }
+
       nodes.map { node ->
         async {
           messageClient.sendMessage(node.id, path, data).await()
         }
       }.awaitAll()
+      successProcess()
     } catch (exception: Exception) {
-      // TODO Firebase Crashlytics
+      errorProcess(exception)
     }
   }
 

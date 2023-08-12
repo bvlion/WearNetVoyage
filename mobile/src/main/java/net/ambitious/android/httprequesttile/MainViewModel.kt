@@ -85,12 +85,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
           }
         }
     } ?: byteArrayOf()
-    wearConnector.sendMessageToWear(WearMobileConnector.WEAR_SAVE_REQUEST_PATH, watchSavedRequests)
+    wearConnector.sendMessageToWear(WearMobileConnector.WEAR_SAVE_REQUEST_PATH, watchSavedRequests) {
+      // TODO Crashlytics
+    }
   }
 
   fun requestResponsesToWear() {
     viewModelScope.launch(Dispatchers.IO) {
-      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH)
+      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH) {
+        // TODO Crashlytics
+      }
     }
   }
 
@@ -99,7 +103,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       responses.parseResponseParams().forEach {
         saveResponses(it)
       }
-      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_SAVED_RESPONSE_PATH)
+      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_SAVED_RESPONSE_PATH) {
+        // TODO Crashlytics
+      }
     }
   }
 
@@ -236,10 +242,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   fun syncWatch(scope: CoroutineScope?, scaffoldState: ScaffoldState?) {
     viewModelScope.launch(Dispatchers.IO) {
       requestsSyncToWear()
-      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH)
-    }
-    if (scope != null && scaffoldState != null) {
-      showMessageSnackbar(scope, scaffoldState, "ウェアラブルと同期しました。")
+      wearConnector.sendMessageToWear(
+        WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH,
+        successProcess = {
+          if (scope != null && scaffoldState != null) {
+            showMessageSnackbar(scope, scaffoldState, "ウェアラブルと同期しました。")
+          }
+        }
+      ) {
+        // TODO Crashlytics
+        if (scope != null && scaffoldState != null) {
+          showMessageSnackbar(scope, scaffoldState, "ウェアラブルが見つかりません")
+        }
+      }
     }
   }
 }

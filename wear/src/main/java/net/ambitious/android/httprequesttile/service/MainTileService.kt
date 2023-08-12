@@ -55,15 +55,26 @@ class MainTileService : SuspendingTileService() {
         )
       }
       AppConstants.SYNC_STORE_DATA -> {
-        startActivity(
-          Intent(this, ToastActivity::class.java)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "同期を開始しました")
-        )
         lifecycleScope.launch(Dispatchers.IO) {
           AppConstants.startMobileActivity(this@MainTileService, lifecycleScope) { }
           delay(1000)
-          WearMobileConnector(this@MainTileService).sendMessageToMobile(WearMobileConnector.MOBILE_REQUEST_SYNC_PATH)
+          WearMobileConnector(this@MainTileService)
+            .sendMessageToMobile(
+              WearMobileConnector.MOBILE_REQUEST_SYNC_PATH,
+              successProcess = {
+                startActivity(
+                  Intent(this@MainTileService, ToastActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "同期を開始しました")
+                )
+              }
+            ) {
+              startActivity(
+                Intent(this@MainTileService, ToastActivity::class.java)
+                  .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                  .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンが見つかりませんでした")
+              )
+            }
         }
       }
     }
