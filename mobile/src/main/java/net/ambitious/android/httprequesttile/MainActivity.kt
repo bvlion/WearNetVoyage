@@ -37,6 +37,7 @@ import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.data.ResponseParams
 import net.ambitious.android.httprequesttile.data.ResponseParams.Companion.parseResponseParams
+import net.ambitious.android.httprequesttile.request.WearMobileConnector
 import net.ambitious.android.httprequesttile.ui.theme.MainAnimatedVisibility
 import net.ambitious.android.httprequesttile.ui.theme.AppTheme
 
@@ -205,7 +206,7 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
   }
 
   override fun onMessageReceived(messageEvent: MessageEvent) {
-    if (messageEvent.path == Constant.MOBILE_SAVE_RESPONSE_PATH) {
+    if (messageEvent.path == WearMobileConnector.MOBILE_SAVE_RESPONSE_PATH) {
       val responses = String(messageEvent.data)
       if (responses.isNotEmpty()) {
         viewModel.saveWearResponses(responses)

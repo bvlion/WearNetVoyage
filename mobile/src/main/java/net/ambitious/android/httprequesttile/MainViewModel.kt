@@ -9,27 +9,21 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.ScaffoldState
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.wearable.CapabilityClient
-import com.google.android.gms.wearable.Wearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.AppDataStore
-import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.ErrorDetail
 import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.data.ResponseParams
 import net.ambitious.android.httprequesttile.data.ResponseParams.Companion.parseResponseParams
 import net.ambitious.android.httprequesttile.request.HttpRequester
+import net.ambitious.android.httprequesttile.request.WearMobileConnector
 import org.json.JSONArray
 import java.util.Date
 
@@ -37,9 +31,7 @@ import java.util.Date
 class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val dataStore = AppDataStore.getDataStore(application)
   private val requester = HttpRequester()
-
-  private val messageClient by lazy { Wearable.getMessageClient(application) }
-  private val capabilityClient by lazy { Wearable.getCapabilityClient(application) }
+  private val wearConnector = WearMobileConnector(application)
 
   val resultBottomSheet = ModalBottomSheetState(ModalBottomSheetValue.Hidden, isSkipHalfExpanded = true)
 
@@ -93,12 +85,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
           }
         }
     } ?: byteArrayOf()
-    sendMessageToWear(Constant.WEAR_SAVE_REQUEST_PATH, watchSavedRequests)
+    wearConnector.sendMessageToWear(WearMobileConnector.WEAR_SAVE_REQUEST_PATH, watchSavedRequests)
   }
 
   fun requestResponsesToWear() {
     viewModelScope.launch(Dispatchers.IO) {
-      sendMessageToWear(Constant.WEAR_REQUEST_RESPONSE_PATH, byteArrayOf())
+      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH)
     }
   }
 
@@ -107,24 +99,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       responses.parseResponseParams().forEach {
         saveResponses(it)
       }
-      sendMessageToWear(Constant.WEAR_SAVED_RESPONSE_PATH, byteArrayOf())
-    }
-  }
-
-  private suspend fun sendMessageToWear(path: String, data: ByteArray) = coroutineScope {
-    try {
-      val nodes = capabilityClient
-        .getCapability(Constant.WEAR_CAPABILITY, CapabilityClient.FILTER_REACHABLE)
-        .await()
-        .nodes
-
-      nodes.map { node ->
-        async {
-          messageClient.sendMessage(node.id, path, data).await()
-        }
-      }.awaitAll()
-    } catch (exception: Exception) {
-      // TODO Firebase Crashlytics
+      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_SAVED_RESPONSE_PATH)
     }
   }
 
@@ -261,7 +236,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   fun syncWatch(scope: CoroutineScope, scaffoldState: ScaffoldState) {
     viewModelScope.launch(Dispatchers.IO) {
       requestsSyncToWear()
-      sendMessageToWear(Constant.WEAR_REQUEST_RESPONSE_PATH, byteArrayOf())
+      wearConnector.sendMessageToWear(WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH)
     }
     showMessageSnackbar(scope, scaffoldState, "ウェアラブルと同期しました。")
   }
