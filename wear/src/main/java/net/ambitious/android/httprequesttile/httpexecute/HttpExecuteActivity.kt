@@ -31,6 +31,7 @@ class HttpExecuteActivity : ComponentActivity() {
     setContent {
       val isSent = viewModel.isSent.collectAsState()
       if (isSent.value) {
+        intent = null
         finish()
       }
       HttpExecute(intent.getStringExtra(EXTRA_REQUEST_TITLE) ?: "")
