@@ -116,7 +116,16 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
                     newCreateClick = { bottomMenuIndex.value = 1 },
                     bottomPadding = it.calculateBottomPadding(),
                     watchSync = { index, request ->
-                      viewModel.saveRequest(null, null, index, request)
+                      if (
+                        (savedRequests.value?.parseRequestParams()?.filter { it.watchSync }?.size ?: 0) >= Constant.MAX_SYNC_COUNT &&
+                            request.watchSync
+                      ) {
+                        viewModel.showWatchSyncError()
+                        false
+                      } else {
+                        viewModel.saveRequest(null, null, index, request)
+                        true
+                      }
                     },
                     edit = { index, request ->
                       editRequestIndex.value = index

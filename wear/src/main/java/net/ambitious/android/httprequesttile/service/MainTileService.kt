@@ -57,7 +57,7 @@ class MainTileService : SuspendingTileService() {
       AppConstants.SYNC_STORE_DATA -> {
         lifecycleScope.launch(Dispatchers.IO) {
           AppConstants.startMobileActivity(this@MainTileService, lifecycleScope) { }
-          delay(1000)
+          delay(500)
           WearMobileConnector(this@MainTileService)
             .sendMessageToMobile(
               WearMobileConnector.MOBILE_REQUEST_SYNC_PATH,

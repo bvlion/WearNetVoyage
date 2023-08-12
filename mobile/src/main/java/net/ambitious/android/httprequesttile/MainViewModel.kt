@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.AppDataStore
+import net.ambitious.android.httprequesttile.data.Constant
 import net.ambitious.android.httprequesttile.data.ErrorDetail
 import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
@@ -256,5 +257,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
       }
     }
+  }
+
+  fun showWatchSyncError() {
+    _errorDialog.value = ErrorDetail(
+      "ウェアラブル同期エラー",
+      "同期できる通信は${Constant.MAX_SYNC_COUNT}つまでです。\n別の同期されている通信のチェックを外してください。"
+    )
   }
 }

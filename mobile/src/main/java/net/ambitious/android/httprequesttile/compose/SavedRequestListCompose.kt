@@ -38,7 +38,7 @@ private fun SavedRequest(
   addTopPadding: Dp = 0.dp,
   addBottomPadding: Dp = 0.dp,
   requestParams: RequestParams,
-  watchSync: (RequestParams) -> Unit = {},
+  watchSync: (RequestParams) -> Boolean,
   edit: (RequestParams) -> Unit = {},
   send: (RequestParams) -> Unit = {},
 ) {
@@ -61,13 +61,17 @@ private fun SavedRequest(
           modifier = Modifier
             .noRippleClickable {
               checked.value = !checked.value
-              watchSync(requestParams.copy(watchSync = checked.value))
+              if (!watchSync(requestParams.copy(watchSync = checked.value))) {
+                checked.value = false
+              }
             }
             .padding(end = 16.dp)
         ) {
           Checkbox(checked = checked.value, onCheckedChange = {
             checked.value = it
-            watchSync(requestParams.copy(watchSync = checked.value))
+            if (!watchSync(requestParams.copy(watchSync = checked.value))) {
+              checked.value = false
+            }
           })
           Text(text = "ウェアラブルに同期", fontSize = 12.sp)
         }
@@ -97,7 +101,7 @@ fun SavedRequestList(
   requests: List<RequestParams>?,
   newCreateClick: () -> Unit = {},
   bottomPadding: Dp = 56.dp,
-  watchSync: (Int, RequestParams) -> Unit = { _, _ -> },
+  watchSync: (Int, RequestParams) -> Boolean = { _, _ -> true },
   edit: (Int, RequestParams) -> Unit = { _, _ -> },
   send: (RequestParams) -> Unit = {},
 ) = when {
