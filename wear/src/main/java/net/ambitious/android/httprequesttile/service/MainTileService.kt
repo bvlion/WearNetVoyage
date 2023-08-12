@@ -65,7 +65,7 @@ class MainTileService : SuspendingTileService() {
                 startActivity(
                   Intent(this@MainTileService, ToastActivity::class.java)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "同期を開始しました")
+                    .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "同期しました")
                 )
               }
             ) {

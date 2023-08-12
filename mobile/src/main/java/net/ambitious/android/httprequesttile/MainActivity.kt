@@ -150,13 +150,19 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
                     editRequestIndex.value,
                     it.calculateBottomPadding(),
                     cancel = {
+                      editRequest.value = null
+                      editRequestIndex.value = -1
                       bottomMenuIndex.value = 0
                     },
                     save = { index, request ->
+                      editRequest.value = null
+                      editRequestIndex.value = -1
                       viewModel.saveRequest(scope, scaffoldState, index, request)
                       bottomMenuIndex.value = 0
                     },
                     delete = {
+                      editRequest.value = null
+                      editRequestIndex.value = -1
                       viewModel.deleteRequest(scope, scaffoldState, it)
                       bottomMenuIndex.value = 0
                     }
