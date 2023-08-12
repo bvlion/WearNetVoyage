@@ -206,10 +206,15 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
   }
 
   override fun onMessageReceived(messageEvent: MessageEvent) {
-    if (messageEvent.path == WearMobileConnector.MOBILE_SAVE_RESPONSE_PATH) {
-      val responses = String(messageEvent.data)
-      if (responses.isNotEmpty()) {
-        viewModel.saveWearResponses(responses)
+    when (messageEvent.path) {
+      WearMobileConnector.MOBILE_SAVE_RESPONSE_PATH -> {
+        val responses = String(messageEvent.data)
+        if (responses.isNotEmpty()) {
+          viewModel.saveWearResponses(responses)
+        }
+      }
+      WearMobileConnector.MOBILE_REQUEST_SYNC_PATH -> {
+        viewModel.syncWatch(null, null)
       }
     }
   }

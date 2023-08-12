@@ -233,11 +233,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     _errorDialog.value = null
   }
 
-  fun syncWatch(scope: CoroutineScope, scaffoldState: ScaffoldState) {
+  fun syncWatch(scope: CoroutineScope?, scaffoldState: ScaffoldState?) {
     viewModelScope.launch(Dispatchers.IO) {
       requestsSyncToWear()
       wearConnector.sendMessageToWear(WearMobileConnector.WEAR_REQUEST_RESPONSE_PATH)
     }
-    showMessageSnackbar(scope, scaffoldState, "ウェアラブルと同期しました。")
+    if (scope != null && scaffoldState != null) {
+      showMessageSnackbar(scope, scaffoldState, "ウェアラブルと同期しました。")
+    }
   }
 }

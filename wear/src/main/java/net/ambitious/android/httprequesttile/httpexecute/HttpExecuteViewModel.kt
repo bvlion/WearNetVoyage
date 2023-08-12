@@ -60,7 +60,7 @@ class HttpExecuteViewModel(application: Application) : AndroidViewModel(applicat
         }
       }
       val timerDeferred = async(Dispatchers.IO) {
-        delay(1500)
+        delay(2000)
       }
 
       val response = listOf(networkDeferred, timerDeferred).awaitAll()

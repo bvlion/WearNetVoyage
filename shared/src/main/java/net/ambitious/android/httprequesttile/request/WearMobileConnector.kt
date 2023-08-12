@@ -42,10 +42,16 @@ class WearMobileConnector(context: Context) {
     private const val WEAR_CAPABILITY = "wear"
     private const val MOBILE_CAPABILITY = "mobile"
 
+    /** Wear に Request 一覧を送る */
     const val WEAR_SAVE_REQUEST_PATH = "/save-request-params"
+    /** Wear に Response 一覧を送るように依頼する */
     const val WEAR_REQUEST_RESPONSE_PATH = "/request-to-send-responses"
+    /** Wear から送られた Response 一覧が保存できたことを通知する */
     const val WEAR_SAVED_RESPONSE_PATH = "/saved-send-responses"
 
+    /** Mobile に　Response 一覧を送る */
     const val MOBILE_SAVE_RESPONSE_PATH = "/save-wear-responses"
+    /** Mobile に　同期を解するように依頼する */
+    const val MOBILE_REQUEST_SYNC_PATH = "/request-sync"
   }
 }

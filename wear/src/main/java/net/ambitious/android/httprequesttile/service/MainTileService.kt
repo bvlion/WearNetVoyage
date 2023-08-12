@@ -9,11 +9,13 @@ import androidx.wear.tiles.TileBuilders
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.tiles.SuspendingTileService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.data.AppDataStore
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
+import net.ambitious.android.httprequesttile.request.WearMobileConnector
 import net.ambitious.android.httprequesttile.tile.LinkTileRenderer
 import net.ambitious.android.httprequesttile.tile.LinkTileState
 import net.ambitious.android.httprequesttile.toast.ToastActivity
@@ -37,19 +39,33 @@ class MainTileService : SuspendingTileService() {
     render.produceRequestedResources(true, requestParams)
 
   override suspend fun tileRequest(requestParams: RequestBuilders.TileRequest): TileBuilders.Tile {
-    if (requestParams.state?.lastClickableId == AppConstants.START_MOBILE_ACTIVITY) {
-      AppConstants.startMobileActivity(this, lifecycleScope) {
+    when (requestParams.state?.lastClickableId) {
+      AppConstants.START_MOBILE_ACTIVITY -> {
+        AppConstants.startMobileActivity(this, lifecycleScope) {
+          startActivity(
+            Intent(this, ToastActivity::class.java)
+              .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+              .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンのアプリがインストールされていません")
+          )
+        }
         startActivity(
-          Intent(this@MainTileService, ToastActivity::class.java)
+          Intent(this, ToastActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンのアプリがインストールされていません")
+            .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンのアプリを起動しました")
         )
       }
-      startActivity(
-        Intent(this@MainTileService, ToastActivity::class.java)
-          .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-          .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンのアプリを起動しました")
-      )
+      AppConstants.SYNC_STORE_DATA -> {
+        startActivity(
+          Intent(this, ToastActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "同期を開始しました")
+        )
+        lifecycleScope.launch(Dispatchers.IO) {
+          AppConstants.startMobileActivity(this@MainTileService, lifecycleScope) { }
+          delay(1000)
+          WearMobileConnector(this@MainTileService).sendMessageToMobile(WearMobileConnector.MOBILE_REQUEST_SYNC_PATH)
+        }
+      }
     }
     return render.renderTimeline(
       LinkTileState(
