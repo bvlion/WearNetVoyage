@@ -32,6 +32,11 @@
             android:exported="true"
             android:theme="@android:style/Theme.DeviceDefault" />
 
+        <activity
+            android:name=".toast.ToastActivity"
+            android:exported="false"
+            android:theme="@style/NoAnimationTheme" />
+
         <service
             android:name="net.ambitious.android.httprequesttile.service.MobilesDataListenerService"
             android:exported="true">

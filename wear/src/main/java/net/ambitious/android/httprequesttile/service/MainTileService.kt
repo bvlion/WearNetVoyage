@@ -1,6 +1,7 @@
 package net.ambitious.android.httprequesttile.service
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.lifecycleScope
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.ResourceBuilders
@@ -15,6 +16,7 @@ import net.ambitious.android.httprequesttile.data.AppDataStore
 import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParams
 import net.ambitious.android.httprequesttile.tile.LinkTileRenderer
 import net.ambitious.android.httprequesttile.tile.LinkTileState
+import net.ambitious.android.httprequesttile.toast.ToastActivity
 
 @OptIn(ExperimentalHorologistApi::class)
 class MainTileService : SuspendingTileService() {
@@ -36,7 +38,18 @@ class MainTileService : SuspendingTileService() {
 
   override suspend fun tileRequest(requestParams: RequestBuilders.TileRequest): TileBuilders.Tile {
     if (requestParams.state?.lastClickableId == AppConstants.START_MOBILE_ACTIVITY) {
-      AppConstants.startMobileActivity(this, lifecycleScope)
+      AppConstants.startMobileActivity(this, lifecycleScope) {
+        startActivity(
+          Intent(this@MainTileService, ToastActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンのアプリがインストールされていません")
+        )
+      }
+      startActivity(
+        Intent(this@MainTileService, ToastActivity::class.java)
+          .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          .putExtra(ToastActivity.EXTRA_TOAST_MESSAGE, "スマートフォンのアプリを起動しました")
+      )
     }
     return render.renderTimeline(
       LinkTileState(

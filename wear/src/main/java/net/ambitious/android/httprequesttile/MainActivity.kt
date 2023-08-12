@@ -1,6 +1,7 @@
 package net.ambitious.android.httprequesttile
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
+import androidx.wear.widget.ConfirmationOverlay
 import net.ambitious.android.httprequesttile.data.AppConstants
 import net.ambitious.android.httprequesttile.theme.HttpRequestTileTheme
 
@@ -25,7 +27,12 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       WearApp {
-        AppConstants.startMobileActivity(this, lifecycleScope)
+        AppConstants.startMobileActivity(this, lifecycleScope) {
+          ConfirmationOverlay()
+            .setType(ConfirmationOverlay.FAILURE_ANIMATION)
+            .showOn(this)
+        }
+        Toast.makeText(this, "スマートフォンのアプリを起動しました", Toast.LENGTH_SHORT).show()
       }
     }
   }

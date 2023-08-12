@@ -1,12 +1,9 @@
 package net.ambitious.android.httprequesttile.data
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.wear.remote.interactions.RemoteActivityHelper
-import androidx.wear.widget.ConfirmationOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
@@ -17,7 +14,8 @@ object AppConstants {
 
   fun startMobileActivity(
     context: Context,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    errorProcess: () -> Unit
   ) {
     val remoteActivityHelper = RemoteActivityHelper(context)
     scope.launch {
@@ -28,17 +26,7 @@ object AppConstants {
             .setData(Uri.parse("httprequesttile://start"))
         ).await()
       } catch (e: Exception) {
-        if (context is Activity) {
-          ConfirmationOverlay()
-            .setType(ConfirmationOverlay.FAILURE_ANIMATION)
-            .showOn(context)
-        } else {
-          Toast.makeText(
-            context,
-            "スマートフォンのアプリがインストールされていません",
-            Toast.LENGTH_LONG
-          ).show()
-        }
+        errorProcess()
       }
     }
   }
