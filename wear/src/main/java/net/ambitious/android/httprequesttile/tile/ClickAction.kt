@@ -1,13 +1,17 @@
 package net.ambitious.android.httprequesttile.tile
 
+import android.content.Context
 import androidx.wear.tiles.ActionBuilders
 import net.ambitious.android.httprequesttile.data.RequestParams
 import net.ambitious.android.httprequesttile.httpexecute.HttpExecuteActivity
 
 object ClickAction {
-  fun requestExecute(requestParams: RequestParams): ActionBuilders.AndroidActivity =
+  fun requestExecute(
+    context: Context,
+    requestParams: RequestParams
+  ): ActionBuilders.AndroidActivity =
     ActionBuilders.AndroidActivity.Builder()
-      .setPackageName("net.ambitious.android.httprequesttile.debug")
+      .setPackageName(context.packageName)
       .setClassName("net.ambitious.android.httprequesttile.httpexecute.HttpExecuteActivity")
       .addKeyToExtraMapping(
         HttpExecuteActivity.EXTRA_REQUEST_PARAMS,

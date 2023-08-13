@@ -39,7 +39,7 @@ class LinkTileRenderer(context: Context) : SingleTileLayoutRenderer<LinkTileStat
           .setId(requestParams.title)
           .setOnClick(
             ActionBuilders.LaunchAction.Builder()
-              .setAndroidActivity(ClickAction.requestExecute(requestParams))
+              .setAndroidActivity(ClickAction.requestExecute(context, requestParams))
               .build()
           )
           .build()
