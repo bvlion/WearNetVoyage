@@ -23,9 +23,6 @@ data class ResponseParams(
   }.toString()
 
   companion object {
-    const val RESPONSE_PARAMS_URI = "/response_params"
-    const val RESPONSE_PARAMS_LIST_KEY = "response_params_list"
-
     private const val TITLE = "title"
     private const val RESPONSE_CODE = "responseCode"
     private const val EXEC_TIME = "execTime"
