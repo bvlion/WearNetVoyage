@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
-import net.ambitious.android.httprequesttile.data.RequestParams.Companion.parseRequestParam
 import net.ambitious.android.httprequesttile.theme.HttpRequestTileTheme
 
 class HttpExecuteActivity : ComponentActivity() {
@@ -30,12 +29,12 @@ class HttpExecuteActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       val isSent = viewModel.isSent.collectAsState()
-      if (isSent.value) {
-        intent = null
-        finish()
-      }
       HttpExecute(intent.getStringExtra(EXTRA_REQUEST_TITLE) ?: "")
       viewModel.sendRequest(intent.getStringExtra(EXTRA_REQUEST_PARAMS))
+      if (isSent.value) {
+        intent = null // 不用意に呼ばれるのを防止する
+        finish()
+      }
     }
   }
 
